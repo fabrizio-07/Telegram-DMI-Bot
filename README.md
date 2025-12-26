@@ -7,7 +7,7 @@
 The bot is live on Telegram with the username [@DMI_Bot](https://telegram.me/DMI_Bot).
 Send **`/start`** to start it, **`/help`** to see a list of commands.
 
-Please note that the commands and their answers are in Italian.
+Please note that the commands and their answers are in Italian. 
 
 ---
 
