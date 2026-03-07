@@ -144,7 +144,6 @@ def get_files_keyboard(file_list: list, row_len: int = 2) -> list:
     """
     formats = {
         **{"pdf": "📕 "},
-        **dict.fromkeys([' a', 'b', 'c'], 10),
         **dict.fromkeys(["doc", "docx", "txt"], "📄 "),
         **dict.fromkeys(["jpg", "png", "gif"], "📷 "),
         **dict.fromkeys(["rar", "zip"], "📦 "),
@@ -161,9 +160,9 @@ def get_files_keyboard(file_list: list, row_len: int = 2) -> list:
 
         else:
             # get last 5 characters of strings
-            file_format = file['title'][-5:]
-            file_format = file_format.split(".")  # split file_format per "."
-            file_format = file_format[-1]  # get last element of file_format
+            file_format_str: str = str(file['title'])[-5:]
+            file_format_parts = file_format_str.split(".")
+            file_format: str = str(file_format_parts[-1])  # get last element
             icon = formats.get(file_format, "📄 ")
 
         keyboard_button = InlineKeyboardButton(
