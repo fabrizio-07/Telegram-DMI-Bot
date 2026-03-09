@@ -5,11 +5,11 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 from pydrive2.files import ApiRequestError
 from telegram import Update
-from telegram.ext import CallbackContext
 from telegram.error import BadRequest
+from telegram.ext import CallbackContext
 
-from module.utils.drive_contribute_utils import delete_drive_permission_job
 from module.data.vars import TEXT_IDS
+from module.utils.drive_contribute_utils import delete_drive_permission_job
 from module.utils.multi_lang_utils import get_locale
 
 with open('config/settings.yaml', 'r', encoding='UTF-8') as yaml_config:
@@ -27,7 +27,7 @@ def drive_contribute(update: Update, context: CallbackContext) -> None:
     else:
         username = get_locale(locale, TEXT_IDS.DRIVE_NO_USERNAME_WARNING_TEXT_ID)
 
-    if len(args) < 2:
+    if not args or len(args) < 2:
         context.bot.sendMessage(
             chat_id=chat_id,
             text=get_locale(locale, TEXT_IDS.DRIVE_USE_TEXT_TEXT_ID),
