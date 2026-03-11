@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
 """/esami command"""
 
-import logging
 import re
-from typing import List, Optional, Tuple
 
-from telegram import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext
 
 from module.data import Exam
 from module.data.vars import PLACE_HOLDER, TEXT_IDS
-from module.shared import check_log, send_message
-from module.utils.multi_lang_utils import get_locale, get_locale_code
+from module.shared import check_log
+from module.utils.multi_lang_utils import get_locale
 
 
 def reminder(update: Update, context: CallbackContext) -> None:
@@ -48,7 +46,7 @@ def reminder(update: Update, context: CallbackContext) -> None:
             ),
         )
 
-    # todo: gestire la scritta usando locale sia per inglese che per italiano
+    # gestire la scritta usando locale sia per inglese che per italiano
     message_text = "Di quale materia vuoi prenotarti?"
 
     context.bot.send_message(chat_id=update.message.chat_id, text=message_text)
@@ -69,7 +67,7 @@ def reminder_input_insegnamento(update: Update, context: CallbackContext) -> Non
 
         if len(exams) > 0:
             professors = list(
-                set([getattr(exam, 'docenti', 'Sconosciuto') for exam in exams])
+                {getattr(exam, 'docenti', 'Sconosciuto') for exam in exams}
             )
 
             context.user_data['reminder']['insegnamento'] = raw_subject
@@ -83,14 +81,14 @@ def reminder_input_insegnamento(update: Update, context: CallbackContext) -> Non
 
             context.bot.send_message(
                 chat_id=update.message.chat_id,
-                # todo: gestire la scritta usando locale sia per inglese che per italiano
+                # gestire la scritta usando locale sia per inglese che per italiano
                 text=f"Ho trovato la materia '{raw_subject}'. Seleziona il professore:",
                 reply_markup=InlineKeyboardMarkup(keyboard),
             )
         else:
             context.bot.send_message(
                 chat_id=update.message.chat_id,
-                # todo: gestire la scritta usando locale sia per inglese che per italiano
+                # gestire la scritta usando locale sia per inglese che per italiano
                 text=f"Non ho trovato nessuna materia corrispondente a '{raw_subject}' nel database.",
             )
 
@@ -106,6 +104,6 @@ def reminder_prof_handler(update: Update, context: CallbackContext) -> None:
     prof_idx = int(query.data.replace("rem_prof_", ""))
 
     prof_name = context.user_data['reminder']['prof_list'][prof_idx]
-    subject = context.user_data['reminder']['insegnamento']
+    # subject = context.user_data['reminder']['insegnamento']
 
     context.user_data['reminder']['professore'] = prof_name
