@@ -39,6 +39,11 @@ from module.commands.regolamento_didattico import (
     regolamentodidattico_handler,
     send_regolamento,
 )
+from module.commands.reminder import (
+    reminder,
+    reminder_input_insegnamento,
+    reminder_prof_handler,
+)
 from module.commands.report import report
 from module.commands.start import start
 from module.commands.stats import stats, stats_tot
@@ -70,6 +75,7 @@ def add_commands(up: Updater) -> None:
         BotCommand("help ", "help"),
         BotCommand("gruppi", "link alla lista dei gruppi telegram delle materie"),
         BotCommand("esami", "cerca informazioni sugli esami"),
+        BotCommand("reminder", "imposta un reminder per la prenotazione ad un appello"),
         BotCommand("lezioni", "cerca informazioni sulle lezioni"),
         BotCommand("prof", "cerca informazioni sui professori"),
         BotCommand("aulario", "cerca informazioni sull'aulario"),
@@ -148,6 +154,7 @@ def add_handlers(dp: Dispatcher) -> None:
 
     dp.add_handler(CommandHandler('lezioni', lezioni))
     dp.add_handler(CommandHandler('esami', esami))
+    dp.add_handler(CommandHandler('reminder', reminder))
 
     dp.add_handler(CommandHandler('prof', prof))
 
@@ -233,6 +240,16 @@ def add_handlers(dp: Dispatcher) -> None:
     dp.add_handler(CallbackQueryHandler(esami_handler, pattern='esami_button_.*'))
     dp.add_handler(
         MessageHandler(Filters.regex(r"^(?!=<[/])[Ii]ns:\s+"), esami_input_insegnamento)
+    )
+
+    # reminder
+    # regex accetta [/ins: nome] oppure [\Ins:nome], per agevolare chi usa il cellulare
+    dp.add_handler(CallbackQueryHandler(reminder_prof_handler, pattern='^rem_prof_'))
+    dp.add_handler(
+        MessageHandler(
+            Filters.regex(r"^(?!=<[/])[Ii]ns:\s+"), reminder_input_insegnamento
+        ),
+        2,
     )
 
     # lezioni
