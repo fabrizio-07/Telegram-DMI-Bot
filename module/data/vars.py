@@ -129,6 +129,9 @@ class TEXT_IDS(Enum):
     EXAMS_SESSION_3_TEXT_ID = auto()
     EXAMS_SESSION_4_TEXT_ID = auto()
     EXAMS_USAGE_TEXT_ID = auto()
+    # /reminder
+    REMINDER_FOUND_SUBJECT_TEXT_ID = auto()
+    REMINDER_NOT_FOUND_SUBJECT_TEXT_ID = auto()
 
 
 # Placeholder special string to be used in replace()
