@@ -13,8 +13,8 @@ from module.utils.multi_lang_utils import get_locale
 
 
 def reminder(update: Update, context: CallbackContext) -> None:
-    """Called by the /esami command.
-    Execute an exam query.
+    """Called by the /reminder command.
+    Sets a reimnder to sign up for a certain exam date.
 
     Args:
         update: update event
@@ -46,7 +46,7 @@ def reminder(update: Update, context: CallbackContext) -> None:
             ),
         )
 
-    # gestire la scritta usando locale sia per inglese che per italiano
+    # TODO gestire la scritta usando locale sia per inglese che per italiano
     message_text = "Di quale materia vuoi prenotarti?"
 
     context.bot.send_message(chat_id=update.message.chat_id, text=message_text)
