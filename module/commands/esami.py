@@ -243,7 +243,7 @@ def esami_input_insegnamento(update: Update, context: CallbackContext) -> None:
 
     if not context.user_data or 'esami' not in context.user_data:
         return
-    
+
     locale: str = get_locale_code(update)
     if context.user_data['esami'].get('cmd', None) == "input_insegnamento":
         # se effettivamente l'user aveva richiesto di modificare l'insegnamento...

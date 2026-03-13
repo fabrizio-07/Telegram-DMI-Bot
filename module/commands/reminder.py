@@ -46,8 +46,7 @@ def reminder(update: Update, context: CallbackContext) -> None:
             ),
         )
 
-    # TODO gestire la scritta usando locale sia per inglese che per italiano
-    message_text = "Di quale materia vuoi prenotarti?"
+    message_text = get_locale(locale, TEXT_IDS.EXAMS_USAGE_TEXT_ID)
 
     context.bot.send_message(chat_id=update.message.chat_id, text=message_text)
 
