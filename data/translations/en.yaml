@@ -328,3 +328,8 @@ EXAMS_USAGE_TEXT_ID: |-
     ins: subject_name
   Example:
     ins: SisTeMi oPeRaTIvI
+
+  
+# /reminder command
+REMINDER_FOUND_SUBJECT_TEXT_ID: "Found subject '%capybara%'. Please select the professor:"
+REMINDER_NOT_FOUND_SUBJECT_TEXT_ID: "No subject matching '%capybara%' was found."

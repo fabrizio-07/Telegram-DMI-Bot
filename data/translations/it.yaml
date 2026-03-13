@@ -331,3 +331,7 @@ EXAMS_USAGE_TEXT_ID: |-
     ins: nome insegnamento
   Esempio:
     ins: SisTeMi oPeRaTIvI
+  
+# /reminder command
+REMINDER_FOUND_SUBJECT_TEXT_ID: "Ho trovato la materia %capibara%. Seleziona il professore:"
+REMINDER_NOT_FOUND_SUBJECT_TEXT_ID: "Non ho trovato nessuna materia corrispondente a %capybara% nel database."
