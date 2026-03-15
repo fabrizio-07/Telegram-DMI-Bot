@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """/reminder testing"""
+
 from unittest.mock import MagicMock, patch
 from module.commands.reminder import reminder
 
