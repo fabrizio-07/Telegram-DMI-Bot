@@ -2,7 +2,7 @@
 """/esami command"""
 
 import re
-from typing import List, Optional, Tuple
+from typing import List
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext
@@ -10,7 +10,7 @@ from telegram.ext import CallbackContext
 from module.data import Exam
 from module.data.vars import PLACE_HOLDER, TEXT_IDS
 from module.shared import check_log
-from module.utils.multi_lang_utils import get_locale, get_locale_code
+from module.utils.multi_lang_utils import get_locale
 
 
 def reminder(update: Update, context: CallbackContext) -> None:
@@ -125,8 +125,8 @@ def reminder_sessione_handler(update: Update, context: CallbackContext) -> None:
     """Handles the inline button click for the session selection."""
     query = update.callback_query
     query.answer()
-    chat_id = query.message.chat_id
-    message_id = query.message.message_id
+    # chat_id = query.message.chat_id
+    # message_id = query.message.message_id
 
     if not context.user_data or 'reminder' not in context.user_data:
         return
