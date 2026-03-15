@@ -3,22 +3,20 @@
 
 from unittest.mock import MagicMock, patch
 
-from module.commands.reminder import reminder
+from module.commands.reminder import reminder, reminder_input_insegnamento
 
 
 def test_reminder_success_private_chat():
-    """Test successo in Chat Privata"""
+    """Test reminder() function, chat privata"""
     # --- ARRANGE ---
-    # Simuliamo un update che arriva da una chat privata (user_id == chat_id)
     mock_update = MagicMock()
     mock_update.message.from_user.id = 12345
     mock_update.message.chat_id = 12345
     mock_update.message.from_user.language_code = 'it'
 
     mock_context = MagicMock()
-    mock_context.user_data = {}  # Partiamo da un contesto vuoto
+    mock_context.user_data = {}
 
-    # Mockiamo le funzioni esterne per non farle eseguire davvero
     with patch('module.commands.reminder.check_log'), patch(
         'module.commands.reminder.get_locale', return_value="test"
     ):
@@ -27,24 +25,20 @@ def test_reminder_success_private_chat():
         reminder(mock_update, mock_context)
 
         # --- ASSERT ---
-        # 1. Verifica che il dizionario sia stato inizializzato correttamente
         assert 'reminder' in mock_context.user_data
         assert mock_context.user_data['reminder']['cmd'] == "input_insegnamento"
 
-        # 2. Verifica che il bot abbia inviato ESATTAMENTE un messaggio (quello di usage)
-        # In chat privata non deve inviare i warning per i gruppi
         assert mock_context.bot.send_message.call_count == 1
         mock_context.bot.send_message.assert_called_with(chat_id=12345, text="test")
 
 
 def test_reminder_warning_in_group():
-    """Test warning in Chat di Gruppo"""
+    """Test reminder() function, chat di gruppo"""
 
     # --- ARRANGE ---
-    # Simuliamo un gruppo: l'ID della chat è diverso dall'ID dell'utente
     mock_update = MagicMock()
     mock_update.message.from_user.id = 12345
-    mock_update.message.chat_id = -987654  # ID tipico di un gruppo
+    mock_update.message.chat_id = -987654
     mock_update.message.from_user.language_code = 'it'
 
     mock_context = MagicMock()
@@ -58,15 +52,12 @@ def test_reminder_warning_in_group():
         reminder(mock_update, mock_context)
 
         # --- ASSERT ---
-        # 1. Verifica che siano stati inviati i messaggi di warning (sendMessage)
-        # più il messaggio di usage finale (send_message)
-        # Nota: nel tuo codice usi sia sendMessage che send_message
         assert mock_context.bot.sendMessage.call_count == 2
         assert mock_context.bot.send_message.call_count == 1
 
 
 def test_reminder_clear_context():
-    """Clear di context.user_data['reminder']"""
+    """Test clear di context.user_data['reminder']"""
     mock_update = MagicMock()
     mock_update.message.from_user.id = 12345
     mock_update.message.chat_id = 12345
@@ -91,3 +82,114 @@ def test_reminder_clear_context():
         assert 'professore' not in mock_context.user_data['reminder']
 
         assert mock_context.user_data['reminder']['cmd'] == 'input_insegnamento'
+
+
+@patch('module.commands.reminder.Exam.find')
+@patch('module.commands.reminder.get_locale')
+def test_reminder_input_insegnamento(mock_get_locale, mock_exam_find):
+    """Test reminder_input_insegnamento() function"""
+
+    # --- ARRANGE ---
+    mock_update = MagicMock()
+    mock_update.message.from_user.id = 12345
+    mock_update.message.chat_id = 12345
+    mock_update.message.from_user.language_code = 'it'
+    mock_update.message.text = "ins: Analisi"
+
+    mock_context = MagicMock()
+    mock_context.user_data = {'reminder': {'cmd': 'input_insegnamento'}}
+
+    exam1 = MagicMock(docenti="Prof. Rossi")
+    exam2 = MagicMock(docenti="Prof. Rossi")
+    mock_exam_find.return_value = [exam1, exam2]
+    mock_get_locale.return_value = "Hai scelto %placeholder%"
+
+    # --- ACT ---
+    reminder_input_insegnamento(mock_update, mock_context)
+
+    # --- ASSERT ---
+    assert 'cmd' not in mock_context.user_data['reminder']
+
+    assert len(mock_context.user_data['reminder']['prof_list']) == 1
+    assert mock_context.user_data['reminder']['prof_list'][0] == "Prof. Rossi"
+
+    assert mock_context.bot.send_message.call_count == 1
+
+
+def test_reminder_input_insegnamento_empty_context():
+    """Test reminder_input_insegnamento() function with empty context.user_data"""
+
+    # --- ARRANGE ---
+    mock_update = MagicMock()
+
+    mock_context = MagicMock()
+    mock_context.user_data = {}
+
+    # --- ACT ---
+    reminder_input_insegnamento(mock_update, mock_context)
+
+    # --- ASSERT ---
+    assert not mock_context.user_data
+    assert 'reminder' not in mock_context.user_data
+
+
+@patch('module.commands.reminder.Exam.find')
+@patch('module.commands.reminder.get_locale')
+def test_reminder_input_insegnamento_empty_db_query(mock_get_locale, mock_exam_find):
+    """Test reminder_input_insegnamento() function with empty Exam query"""
+
+    # --- ARRANGE ---
+    mock_update = MagicMock()
+    mock_update.message.from_user.language_code = 'it'
+    mock_update.message.text = "ins: MateriaInesistente"
+
+    mock_context = MagicMock()
+    mock_context.user_data = {'reminder': {'cmd': 'input_insegnamento'}}
+
+    # Prepariamo i return dei mock
+    mock_exam_find.return_value = []
+    mock_get_locale.return_value = "Non ho trovato nulla per %placeholder%"
+
+    # --- ACT ---
+    reminder_input_insegnamento(mock_update, mock_context)
+
+    # --- ASSERT ---
+    mock_exam_find.assert_called_once()
+
+    assert mock_context.bot.send_message.call_count == 1
+
+    kwargs = mock_context.bot.send_message.call_args
+    assert 'reply_markup' not in kwargs
+
+    assert 'cmd' not in mock_context.user_data['reminder']
+
+
+@patch('module.commands.reminder.Exam.find')
+@patch('module.commands.reminder.get_locale')
+def test_reminder_input_insegnamento_subject_not_found(mock_get_locale, mock_exam_find):
+    """Test reminder_input_insegnamento() function with empty update.message.text"""
+
+    # --- ARRANGE ---
+    mock_update = MagicMock()
+    mock_update.message.from_user.language_code = 'it'
+    mock_update.message.text = "MateriaInesistente"
+
+    mock_context = MagicMock()
+    mock_context.user_data = {'reminder': {'cmd': 'input_insegnamento'}}
+
+    # Prepariamo i return dei mock
+    mock_exam_find.return_value = []
+    mock_get_locale.return_value = "Non ho trovato nulla per %placeholder%"
+
+    # --- ACT ---
+    reminder_input_insegnamento(mock_update, mock_context)
+
+    # --- ASSERT ---
+    mock_exam_find.assert_called_once()
+
+    assert mock_context.bot.send_message.call_count == 1
+
+    kwargs = mock_context.bot.send_message.call_args
+    assert 'reply_markup' not in kwargs
+
+    assert 'cmd' not in mock_context.user_data['reminder']
