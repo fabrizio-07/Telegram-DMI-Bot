@@ -2,8 +2,14 @@
 """/reminder testing"""
 
 from unittest.mock import MagicMock, patch
+from telegram import InlineKeyboardButton
 
-from module.commands.reminder import reminder, reminder_input_insegnamento
+from module.commands.reminder import (
+    reminder,
+    reminder_input_insegnamento,
+    reminder_prof_handler,
+    reminder_button_sessione,
+)
 
 
 def test_reminder_success_private_chat():
@@ -193,3 +199,85 @@ def test_reminder_input_insegnamento_subject_not_found(mock_get_locale, mock_exa
     assert 'reply_markup' not in kwargs
 
     assert 'cmd' not in mock_context.user_data['reminder']
+
+
+@patch('module.commands.reminder.reminder_button_sessione')
+def test_reminder_prof_handler(mock_but_sess):
+    """Test reminder_prof_handler() function"""
+
+    # --- ARRANGE ---
+    mock_update = MagicMock()
+    mock_query = mock_update.callback_query
+    mock_query.data = "rem_prof_0"
+    mock_query.message.chat_id = 12345
+    mock_query.message.message_id = 67891
+
+    mock_context = MagicMock()
+    mock_context.user_data = {
+        'reminder': {
+            'prof_list': ['Prof. Rossi', 'Prof. Bianchi'],
+            'insegnamento': 'Analisi',
+        }
+    }
+
+    # --- ACT ---
+    reminder_prof_handler(mock_update, mock_context)
+
+    # --- ASSERT ---
+    assert 'reminder' in mock_context.user_data
+    assert mock_context.user_data['reminder']['professore'] == 'Prof. Rossi'
+    mock_query.answer.assert_called_once()
+    mock_but_sess.assert_called_once_with(
+        update=mock_update, context=mock_context, chat_id=12345, message_id=67891
+    )
+
+
+@patch('module.commands.reminder.get_locale')
+def test_reminder_button_sessione(mock_get_locale):
+    """Test reminder_button_sessione() function"""
+
+    # --- ARRANGE ---
+    mock_update = MagicMock()
+    mock_update.callback_query.from_user.language_code = 'it'
+    mock_chat_id = 12345
+    mock_message_id = 67891
+
+    mock_get_locale.side_effect = [
+        "Seleziona Sessione",
+        "Sess 1",
+        "Sess 2",
+        "Sess 3",
+        "Sess 4",
+    ]
+
+    mock_context = MagicMock()
+    mock_context.user_data = {
+        'reminder': {
+            'professore': 'Prof. Rossi',
+            'insegnamento': 'Analisi',
+        }
+    }
+
+    expected_keyboard = [
+        [
+            InlineKeyboardButton("Sess 1", callback_data="rem_sess_prima"),
+            InlineKeyboardButton("Sess 2", callback_data="rem_sess_seconda"),
+        ],
+        [
+            InlineKeyboardButton("Sess 3", callback_data="rem_sess_terza"),
+            InlineKeyboardButton("Sess 4", callback_data="rem_sess_straordinaria"),
+        ],
+    ]
+
+    # --- ACT ---
+    reminder_button_sessione(mock_update, mock_context, mock_chat_id, mock_message_id)
+
+    # --- ASSERT ---
+    call_args = mock_context.bot.editMessageText.call_args
+
+    assert call_args.kwargs['text'] == "Seleziona Sessione"
+    assert call_args.kwargs['chat_id'] == mock_chat_id
+    assert call_args.kwargs['message_id'] == mock_message_id
+
+    actual_markup = call_args.kwargs['reply_markup']
+    assert actual_markup.inline_keyboard == expected_keyboard
