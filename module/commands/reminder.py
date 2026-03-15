@@ -10,7 +10,7 @@ from telegram.ext import CallbackContext
 from module.data import Exam
 from module.data.vars import PLACE_HOLDER, TEXT_IDS
 from module.shared import check_log
-from module.utils.multi_lang_utils import get_locale, get_locale_code
+from module.utils.multi_lang_utils import get_locale
 
 
 def reminder(update: Update, context: CallbackContext) -> None:
