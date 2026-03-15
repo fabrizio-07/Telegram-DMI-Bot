@@ -1,10 +1,11 @@
-# import pytest
+# -*- coding: utf-8 -*-
+"""/reminder testing"""
 from unittest.mock import MagicMock, patch
 from module.commands.reminder import reminder
 
 
-# Successo in Chat Privata
 def test_reminder_success_private_chat():
+    """Test successo in Chat Privata"""
     # --- ARRANGE ---
     # Simuliamo un update che arriva da una chat privata (user_id == chat_id)
     mock_update = MagicMock()
@@ -34,8 +35,9 @@ def test_reminder_success_private_chat():
         mock_context.bot.send_message.assert_called_with(chat_id=12345, text="test")
 
 
-# Warning in Chat di Gruppo
 def test_reminder_warning_in_group():
+    """Test warning in Chat di Gruppo"""
+
     # --- ARRANGE ---
     # Simuliamo un gruppo: l'ID della chat è diverso dall'ID dell'utente
     mock_update = MagicMock()
@@ -61,9 +63,8 @@ def test_reminder_warning_in_group():
         assert mock_context.bot.send_message.call_count == 1
 
 
-# Clear di context.user_data['reminder']
 def test_reminder_clear_context():
-
+    """Clear di context.user_data['reminder']"""
     mock_update = MagicMock()
     mock_update.message.from_user.id = 12345
     mock_update.message.chat_id = 12345
