@@ -83,7 +83,6 @@ def reminder_input_insegnamento(update: Update, context: CallbackContext) -> Non
 
             context.bot.send_message(
                 chat_id=update.message.chat_id,
-                # gestire la scritta usando locale sia per inglese che per italiano
                 text=get_locale(
                     locale, TEXT_IDS.REMINDER_FOUND_SUBJECT_TEXT_ID
                 ).replace(PLACE_HOLDER, raw_subject),
@@ -92,7 +91,6 @@ def reminder_input_insegnamento(update: Update, context: CallbackContext) -> Non
         else:
             context.bot.send_message(
                 chat_id=update.message.chat_id,
-                # gestire la scritta usando locale sia per inglese che per italiano
                 text=get_locale(
                     locale, TEXT_IDS.REMINDER_NOT_FOUND_SUBJECT_TEXT_ID
                 ).replace(PLACE_HOLDER, raw_subject),
@@ -112,7 +110,6 @@ def reminder_prof_handler(update: Update, context: CallbackContext) -> None:
     prof_idx = int(query.data.replace("rem_prof_", ""))
 
     prof_name = context.user_data['reminder']['prof_list'][prof_idx]
-    # subject = context.user_data['reminder']['insegnamento']
 
     context.user_data['reminder']['professore'] = prof_name
 
@@ -125,20 +122,12 @@ def reminder_sessione_handler(update: Update, context: CallbackContext) -> None:
     """Handles the inline button click for the session selection."""
     query = update.callback_query
     query.answer()
-    # chat_id = query.message.chat_id
-    # message_id = query.message.message_id
 
     if not context.user_data or 'reminder' not in context.user_data:
         return
 
     sessione_id = query.data.replace("rem_sess_", "")
     context.user_data['reminder']['sessione'] = sessione_id
-
-    # reminder_appello_button...
-
-    # suppongo si debba chidere la sessione e poi proporre le date di appello (tutti e due sempre con bottoni) dopo di che
-    # salvare nella tabella reminder chat_id dello studente, data, materia e professore e data del reminder.
-    # data remindere = data appello - 15 gg
 
 
 def reminder_button_sessione(
