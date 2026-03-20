@@ -3,6 +3,7 @@
 
 import re
 from typing import List
+import ast
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext
@@ -122,12 +123,18 @@ def reminder_sessione_handler(update: Update, context: CallbackContext) -> None:
     """Handles the inline button click for the session selection."""
     query = update.callback_query
     query.answer()
+    chat_id = query.message.chat_id
+    message_id = query.message.message_id
 
     if not context.user_data or 'reminder' not in context.user_data:
         return
 
     sessione_id = query.data.replace("rem_sess_", "")
     context.user_data['reminder']['sessione'] = sessione_id
+
+    reminder_button_appello(
+        update=update, context=context, chat_id=chat_id, message_id=message_id
+    )
 
 
 def reminder_button_sessione(
@@ -174,4 +181,67 @@ def reminder_button_sessione(
         chat_id=chat_id,
         message_id=message_id,
         reply_markup=InlineKeyboardMarkup(keyboard),
+    )
+
+
+def reminder_appello_handler(update: Update, context: CallbackContext) -> None:
+    """Handles the inline button click for the exam date selection."""
+    query = update.callback_query
+    query.answer()
+
+    if not context.user_data or 'reminder' not in context.user_data:
+        return
+
+    date_id = query.data.replace("rem_appello_", "")
+    context.user_data['reminder']['appello'] = date_id
+
+
+def reminder_button_appello(
+    update: Update, context: CallbackContext, chat_id: int, message_id: int
+) -> None:
+    """Called by one of the buttons of the /reminder command.
+    Allows the user to choose an exam date among the ones proposed
+    """
+    locale = update.callback_query.from_user.language_code
+    message_text: str = get_locale(locale, TEXT_IDS.REMINDER_SELECT_EXAM_DATE_TEXT_ID)
+
+    subject = context.user_data['reminder'].get('insegnamento', '')
+    prof = context.user_data['reminder'].get('professore', '')
+    session = context.user_data['reminder'].get('sessione', '')
+
+    all_exams = Exam.find("", "", "", subject)
+
+    valid_dates = []
+    for exam in all_exams:
+        exam_prof = getattr(exam, 'docenti', '')
+        exam_date_string = getattr(exam, session, '')
+
+        if exam_prof == prof and exam_date_string:
+            try:
+                # parsa la stringa contenente le date dell'appello
+                actual_dates = ast.literal_eval(exam_date_string)
+
+                if isinstance(actual_dates, list):
+                    for single_date in actual_dates:
+                        if single_date not in valid_dates:
+                            valid_dates.append(single_date)
+                else:
+                    if str(actual_dates) not in valid_dates:
+                        valid_dates.append(str(actual_dates))
+
+            except (ValueError, SyntaxError):
+                if exam_date_string not in valid_dates:
+                    valid_dates.append(exam_date_string)
+
+    keyboard = []
+    for idx, date in enumerate(valid_dates):
+        keyboard.append(
+            [InlineKeyboardButton(date, callback_data=f"rem_appello_{idx}")]
+        )
+
+    context.bot.editMessageText(
+        text=message_text,
+        chat_id=chat_id,
+        message_id=message_id,
+        reply_markup=InlineKeyboardMarkup(keyboard) if keyboard else None,
     )

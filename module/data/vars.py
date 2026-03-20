@@ -130,6 +130,7 @@ class TEXT_IDS(Enum):
     EXAMS_SESSION_4_TEXT_ID = auto()
     EXAMS_USAGE_TEXT_ID = auto()
     # /reminder
+    REMINDER_SELECT_EXAM_DATE_TEXT_ID = auto()
     REMINDER_FOUND_SUBJECT_TEXT_ID = auto()
     REMINDER_NOT_FOUND_SUBJECT_TEXT_ID = auto()
 

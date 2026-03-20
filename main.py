@@ -44,6 +44,7 @@ from module.commands.reminder import (
     reminder_input_insegnamento,
     reminder_prof_handler,
     reminder_sessione_handler,
+    reminder_appello_handler,
 )
 from module.commands.report import report
 from module.commands.start import start
@@ -248,6 +249,9 @@ def add_handlers(dp: Dispatcher) -> None:
     dp.add_handler(CallbackQueryHandler(reminder_prof_handler, pattern='^rem_prof_'))
     dp.add_handler(
         CallbackQueryHandler(reminder_sessione_handler, pattern='^rem_sess_')
+    )
+    dp.add_handler(
+        CallbackQueryHandler(reminder_appello_handler, pattern='^rem_appello_')
     )
     dp.add_handler(
         MessageHandler(

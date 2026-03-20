@@ -331,5 +331,6 @@ EXAMS_USAGE_TEXT_ID: |-
 
   
 # /reminder command
+REMINDER_SELECT_EXAM_DATE_TEXT_ID: "Select the exam date you are interested in:"
 REMINDER_FOUND_SUBJECT_TEXT_ID: "Found subject '%capybara%'. Please select the professor:"
 REMINDER_NOT_FOUND_SUBJECT_TEXT_ID: "No subject matching '%capybara%' was found."
