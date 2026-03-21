@@ -42,6 +42,8 @@ from module.commands.regolamento_didattico import (
 from module.commands.reminder import (
     reminder,
     reminder_appello_handler,
+    reminder_annullato_handler,
+    reminder_confermato_handler,
     reminder_input_insegnamento,
     reminder_prof_handler,
     reminder_sessione_handler,
@@ -252,6 +254,12 @@ def add_handlers(dp: Dispatcher) -> None:
     )
     dp.add_handler(
         CallbackQueryHandler(reminder_appello_handler, pattern='^rem_appello_')
+    )
+    dp.add_handler(
+        CallbackQueryHandler(reminder_annullato_handler, pattern='^rem_conf_no')
+    )
+    dp.add_handler(
+        CallbackQueryHandler(reminder_confermato_handler, pattern='^rem_conf_yes')
     )
     dp.add_handler(
         MessageHandler(

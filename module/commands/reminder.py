@@ -62,8 +62,8 @@ def reminder_input_insegnamento(update: Update, context: CallbackContext) -> Non
 
     locale = update.message.from_user.language_code
 
+    raw_subject = re.sub(r"^(?!=<[/])[Ii]ns:\s+", "", update.message.text)
     if context.user_data['reminder'].get('cmd', None) == "input_insegnamento":
-        raw_subject = re.sub(r"^(?!=<[/])[Ii]ns:\s+", "", update.message.text)
         exams = Exam.find("", "", "", raw_subject)
         unique_exams = []
         seen = set()
@@ -226,6 +226,38 @@ def reminder_appello_handler(update: Update, context: CallbackContext) -> None:
         chat_id=chat_id,
         message_id=message_id,
         reply_markup=InlineKeyboardMarkup(keyboard) if keyboard else None,
+    )
+
+
+def reminder_confermato_handler(update: Update, context: CallbackContext):
+    '''Handler per gestire conferma richiesta'''
+    query = update.callback_query
+    query.answer()
+    chat_id = query.message.chat_id
+    message_id = query.message.message_id
+
+    message_text = "Operazione confermata"  # cambiare con messaggi vars
+
+    # GESTIRE INSERIMENTO NEL DATABASE
+
+    context.bot.editMessageText(
+        text=message_text, chat_id=chat_id, message_id=message_id
+    )
+
+
+def reminder_annullato_handler(update: Update, context: CallbackContext):
+    '''Handler per gestire annullamento richiesta'''
+    query = update.callback_query
+    query.answer()
+    chat_id = query.message.chat_id
+    message_id = query.message.message_id
+
+    del context.user_data['reminder']
+
+    message_text = "Operazione annullata"  # cambiare con messaggi vars
+
+    context.bot.editMessageText(
+        text=message_text, chat_id=chat_id, message_id=message_id
     )
 
 
