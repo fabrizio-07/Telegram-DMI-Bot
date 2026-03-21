@@ -249,24 +249,24 @@ def reminder_button_appello(
         exam_prof = getattr(exam, 'docenti', '')
         exam_date_string = getattr(exam, session, '')
 
-        if exam_prof == prof and exam_date_string:
-            try:
-                actual_dates = ast.literal_eval(exam_date_string)
+        if exam_prof != prof or not exam_date_string:
+            continue
 
-                if isinstance(actual_dates, list):
-                    for single_date in actual_dates:
-                        if single_date not in valid_dates:
-                            valid_dates.append(single_date)
-                else:
-                    if str(actual_dates) not in valid_dates:
-                        valid_dates.append(str(actual_dates))
+        try:
+            actual_dates = ast.literal_eval(exam_date_string)
+        except (ValueError, SyntaxError):
+            actual_dates = exam_date_string
 
-            except (ValueError, SyntaxError):
-                if exam_date_string not in valid_dates:
-                    valid_dates.append(exam_date_string)
+        if not isinstance(actual_dates, list):
+            actual_dates = [actual_dates]
+
+        for single_date in actual_dates:
+            date_str = str(single_date)
+            if date_str not in valid_dates:
+                valid_dates.append(date_str)
 
     keyboard = []
-    for idx, date in enumerate(valid_dates):
+    for _, date in enumerate(valid_dates):
         keyboard.append(
             [InlineKeyboardButton(date, callback_data=f"rem_appello_{date}")]
         )
