@@ -41,10 +41,10 @@ from module.commands.regolamento_didattico import (
 )
 from module.commands.reminder import (
     reminder,
+    reminder_appello_handler,
     reminder_input_insegnamento,
     reminder_prof_handler,
     reminder_sessione_handler,
-    reminder_appello_handler,
 )
 from module.commands.report import report
 from module.commands.start import start

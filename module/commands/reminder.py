@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """/esami command"""
 
+import ast
 import re
 from typing import List
-import ast
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext
@@ -65,57 +65,60 @@ def reminder_input_insegnamento(update: Update, context: CallbackContext) -> Non
     if context.user_data['reminder'].get('cmd', None) == "input_insegnamento":
         raw_subject = re.sub(r"^(?!=<[/])[Ii]ns:\s+", "", update.message.text)
         exams = Exam.find("", "", "", raw_subject)
+        unique_exams = []
+        seen = set()
+        for exam in exams:
+            subj = getattr(exam, 'insegnamento', 'Sconosciuto')
+            prof = getattr(exam, 'docenti', 'Sconosciuto')
+            if (subj, prof) not in seen:
+                unique_exams.append({'subj': subj, 'prof': prof})
+                seen.add((subj, prof))
 
-        del context.user_data['reminder']['cmd']
+        context.user_data['reminder']['temp_exams_list'] = unique_exams
 
-        if len(exams) > 0:
-            professors = list(
-                {getattr(exam, 'docenti', 'Sconosciuto') for exam in exams}
+        keyboard = []
+        for idx, item in enumerate(unique_exams):
+            button_text = f"{item['subj']} - {item['prof']}"
+            keyboard.append(
+                [InlineKeyboardButton(button_text, callback_data=f"rem_prof_{idx}")]
             )
 
-            context.user_data['reminder']['insegnamento'] = raw_subject
-            context.user_data['reminder']['prof_list'] = professors
-
-            keyboard = []
-            for idx, prof in enumerate(professors):
-                keyboard.append(
-                    [InlineKeyboardButton(prof, callback_data=f"rem_prof_{idx}")]
-                )
-
-            context.bot.send_message(
-                chat_id=update.message.chat_id,
-                text=get_locale(
-                    locale, TEXT_IDS.REMINDER_FOUND_SUBJECT_TEXT_ID
-                ).replace(PLACE_HOLDER, raw_subject),
-                reply_markup=InlineKeyboardMarkup(keyboard),
-            )
-        else:
-            context.bot.send_message(
-                chat_id=update.message.chat_id,
-                text=get_locale(
-                    locale, TEXT_IDS.REMINDER_NOT_FOUND_SUBJECT_TEXT_ID
-                ).replace(PLACE_HOLDER, raw_subject),
-            )
+        context.bot.send_message(
+            chat_id=update.message.chat_id,
+            text="Seleziona l'esame corretto:",
+            reply_markup=InlineKeyboardMarkup(keyboard),
+        )
+    else:
+        context.bot.send_message(
+            chat_id=update.message.chat_id,
+            text=get_locale(
+                locale, TEXT_IDS.REMINDER_NOT_FOUND_SUBJECT_TEXT_ID
+            ).replace(PLACE_HOLDER, raw_subject),
+        )
 
 
 def reminder_prof_handler(update: Update, context: CallbackContext) -> None:
     """Handles the inline button click for the professor selection."""
     query = update.callback_query
     query.answer()
-    chat_id = query.message.chat_id
-    message_id = query.message.message_id
 
     if not context.user_data or 'reminder' not in context.user_data:
         return
 
-    prof_idx = int(query.data.replace("rem_prof_", ""))
+    idx = int(query.data.replace("rem_prof_", ""))
 
-    prof_name = context.user_data['reminder']['prof_list'][prof_idx]
+    selected_exam = context.user_data['reminder']['temp_exams_list'][idx]
 
-    context.user_data['reminder']['professore'] = prof_name
+    context.user_data['reminder']['insegnamento'] = selected_exam['subj']
+    context.user_data['reminder']['professore'] = selected_exam['prof']
+
+    del context.user_data['reminder']['temp_exams_list']
 
     reminder_button_sessione(
-        update=update, context=context, chat_id=chat_id, message_id=message_id
+        update=update,
+        context=context,
+        chat_id=query.message.chat_id,
+        message_id=query.message.message_id,
     )
 
 
@@ -188,12 +191,42 @@ def reminder_appello_handler(update: Update, context: CallbackContext) -> None:
     """Handles the inline button click for the exam date selection."""
     query = update.callback_query
     query.answer()
+    chat_id = query.message.chat_id
+    message_id = query.message.message_id
 
     if not context.user_data or 'reminder' not in context.user_data:
         return
 
     date_id = query.data.replace("rem_appello_", "")
     context.user_data['reminder']['appello'] = date_id
+
+    data = context.user_data['reminder']
+    esame = data.get('insegnamento', 'N/D')
+    prof = data.get('professore', 'N/D')
+    data_scelta = data.get('appello', 'Data selezionata')
+
+    message_text = (
+        f"Riepilogo Promemoria\n\n"
+        f"Materia: {esame}\n"
+        f"Professore: {prof}\n"
+        f"Data: {data_scelta}\n\n"
+        f"Confermi la selezione?"
+    )
+
+    keyboard: List[List[InlineKeyboardButton]] = [[]]
+    keyboard = [
+        [
+            InlineKeyboardButton("Conferma", callback_data="rem_conf_yes"),
+            InlineKeyboardButton("Annulla", callback_data="rem_conf_no"),
+        ]
+    ]
+
+    context.bot.editMessageText(
+        text=message_text,
+        chat_id=chat_id,
+        message_id=message_id,
+        reply_markup=InlineKeyboardMarkup(keyboard) if keyboard else None,
+    )
 
 
 def reminder_button_appello(
@@ -218,7 +251,6 @@ def reminder_button_appello(
 
         if exam_prof == prof and exam_date_string:
             try:
-                # parsa la stringa contenente le date dell'appello
                 actual_dates = ast.literal_eval(exam_date_string)
 
                 if isinstance(actual_dates, list):
@@ -236,7 +268,7 @@ def reminder_button_appello(
     keyboard = []
     for idx, date in enumerate(valid_dates):
         keyboard.append(
-            [InlineKeyboardButton(date, callback_data=f"rem_appello_{idx}")]
+            [InlineKeyboardButton(date, callback_data=f"rem_appello_{date}")]
         )
 
     context.bot.editMessageText(
