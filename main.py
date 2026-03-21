@@ -41,8 +41,8 @@ from module.commands.regolamento_didattico import (
 )
 from module.commands.reminder import (
     reminder,
-    reminder_appello_handler,
     reminder_annullato_handler,
+    reminder_appello_handler,
     reminder_confermato_handler,
     reminder_input_insegnamento,
     reminder_prof_handler,
