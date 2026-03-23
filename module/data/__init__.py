@@ -7,3 +7,4 @@ from .lesson import Lesson
 from .professor import Professor
 from .scrapable import Scrapable
 from .timetable_slot import TimetableSlot
+from .reminder import ExamRegistration
