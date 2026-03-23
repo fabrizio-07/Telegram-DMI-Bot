@@ -12,6 +12,7 @@
 #
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath('../..'))  # path to the actual project root folder
 
 # -- Project information -----------------------------------------------------
@@ -45,7 +46,9 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'  # [optional, to use the far superior Read the Docs theme]
+html_theme = (
+    'sphinx_rtd_theme'  # [optional, to use the far superior Read the Docs theme]
+)
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
