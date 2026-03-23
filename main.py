@@ -47,6 +47,7 @@ from module.commands.reminder import (
     reminder_input_insegnamento,
     reminder_prof_handler,
     reminder_sessione_handler,
+    reminder_new_handler,
 )
 from module.commands.report import report
 from module.commands.start import start
@@ -249,6 +250,7 @@ def add_handlers(dp: Dispatcher) -> None:
     # reminder
     # regex accetta [/ins: nome] oppure [\Ins:nome], per agevolare chi usa il cellulare
     dp.add_handler(CallbackQueryHandler(reminder_prof_handler, pattern='^rem_prof_'))
+    dp.add_handler(CallbackQueryHandler(reminder_new_handler, pattern='^rem_add'))
     dp.add_handler(
         CallbackQueryHandler(reminder_sessione_handler, pattern='^rem_sess_')
     )

@@ -56,11 +56,51 @@ def reminder(update: Update, context: CallbackContext) -> None:
             ),
         )
 
+    message_text = "Cosa desideri fare?"  # gestire con TEXT_IDS
+
+    keyboard: List[List[InlineKeyboardButton]] = [[]]
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                "Aggiungi reminder", callback_data="rem_add"
+            ),  # gestire con TEXT_IDS
+            InlineKeyboardButton(
+                "Cancella reminder", callback_data="rem_del"
+            ),  # gestire con TEXT_IDS
+        ]
+    ]
+
+    context.bot.send_message(
+        chat_id=update.message.chat_id,
+        text=message_text,
+        reply_markup=InlineKeyboardMarkup(keyboard),
+    )
+
+
+# gestire quando l'utente seleziona lo stesso appello due volte
+def reminder_new_handler(update: Update, context: CallbackContext):
+    '''Handler to create a new reminder'''
+    query = update.callback_query
+    query.answer()
+
+    locale = update.callback_query.from_user.language_code
     message_text = get_locale(locale, TEXT_IDS.EXAMS_USAGE_TEXT_ID)
-
-    context.bot.send_message(chat_id=update.message.chat_id, text=message_text)
-
     context.user_data['reminder']['cmd'] = "input_insegnamento"
+    context.bot.send_message(
+        chat_id=query.message.chat_id,
+        text=message_text,
+    )
+
+
+def reminder_del_handler(update: Update, context: CallbackContext):
+    '''Handler to delete a reminder'''
+    message_text = "Quale reminder desideri eliminare?"  # gestire con TEXT_IDS
+
+    keyboard: List[List[InlineKeyboardButton]] = [[]]
+    context.bot.send_message(
+        chat_id=update.message.chat_id,
+        text=message_text,
+    )
 
 
 def reminder_input_insegnamento(update: Update, context: CallbackContext) -> None:
@@ -83,6 +123,8 @@ def reminder_input_insegnamento(update: Update, context: CallbackContext) -> Non
                 seen.add((subj, prof))
 
         context.user_data['reminder']['temp_exams_list'] = unique_exams
+
+        del context.user_data['reminder']['cmd']
 
         keyboard = []
         for idx, item in enumerate(unique_exams):
@@ -219,13 +261,17 @@ def reminder_appello_handler(update: Update, context: CallbackContext) -> None:
         f"Professore: {prof}\n"
         f"Data: {data_scelta}\n\n"
         f"Confermi la selezione?"
-    )
+    )  # gestire con TEXT_IDS
 
     keyboard: List[List[InlineKeyboardButton]] = [[]]
     keyboard = [
         [
-            InlineKeyboardButton("Conferma", callback_data="rem_conf_yes"),
-            InlineKeyboardButton("Annulla", callback_data="rem_conf_no"),
+            InlineKeyboardButton(
+                "Conferma", callback_data="rem_conf_yes"
+            ),  # gestire con TEXT_IDS
+            InlineKeyboardButton(
+                "Annulla", callback_data="rem_conf_no"
+            ),  # gestire con TEXT_IDS
         ]
     ]
 
@@ -265,10 +311,10 @@ def reminder_confermato_handler(update: Update, context: CallbackContext):
 
     try:
         nuovo_reminder.save()
-        message_text = "**Esame Registrato!**\n"
+        message_text = "**Esame Registrato!**\n"  # gestire con TEXT_IDS
     except Exception as e:
         logger.error(f"Errore salvataggio DB: {e}")
-        message_text = "Errore durante il salvataggio dei dati."
+        message_text = "Errore durante il salvataggio dei dati."  # gestire con TEXT_IDS
 
     u_data.clear()
 
@@ -289,7 +335,7 @@ def reminder_annullato_handler(update: Update, context: CallbackContext):
 
     del context.user_data['reminder']
 
-    message_text = "Operazione annullata"  # cambiare con messaggi vars
+    message_text = "Operazione annullata"  # cambiare con messaggi TEXT_IDS
 
     context.bot.editMessageText(
         text=message_text, chat_id=chat_id, message_id=message_id
