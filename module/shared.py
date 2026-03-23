@@ -2,10 +2,12 @@
 import json
 import logging
 from datetime import date, datetime
+
 import yaml
 from telegram import Update
 from telegram.error import BadRequest
 from telegram.ext import CallbackContext
+
 from module.data import DbManager
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)

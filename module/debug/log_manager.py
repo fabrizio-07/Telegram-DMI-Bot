@@ -1,10 +1,12 @@
 """Handles the logging of events"""
+import html
 import logging
 import traceback
-import html
 from datetime import datetime
-from telegram import Update, ParseMode
+
+from telegram import ParseMode, Update
 from telegram.ext import CallbackContext
+
 from module.shared import config_map
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)

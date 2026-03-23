@@ -12,6 +12,7 @@
 #
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath('../..'))  # path to the actual project root folder
 
 # -- Project information -----------------------------------------------------

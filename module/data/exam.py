@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 """Exam class"""
-from typing import List, Optional
 import logging
 import re
+from typing import List, Optional
+
 import bs4
 import requests
-from module.data.scrapable import Scrapable
+
 from module.data.db_manager import DbManager
+from module.data.scrapable import Scrapable
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)

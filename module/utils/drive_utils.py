@@ -1,8 +1,10 @@
-import yaml
 from typing import Optional
+
+import yaml
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
-from pydrive2.files import GoogleDriveFileList, GoogleDriveFile
+from pydrive2.files import GoogleDriveFile, GoogleDriveFileList
+
 from module.debug import log_error
 
 

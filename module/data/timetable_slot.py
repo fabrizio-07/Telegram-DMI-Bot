@@ -3,8 +3,10 @@
 import logging
 from datetime import datetime
 from typing import List
-import requests
+
 import pandas as pd
+import requests
+
 from module.data.db_manager import DbManager
 from module.data.scrapable import Scrapable
 

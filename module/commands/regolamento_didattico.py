@@ -2,11 +2,13 @@
 """/regolamentodidattico command"""
 from typing import Optional
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, CallbackQuery
+from telegram import (CallbackQuery, InlineKeyboardButton,
+                      InlineKeyboardMarkup, Update)
 from telegram.ext import CallbackContext
-from module.shared import check_log
+
 from module.commands.help import help_cmd
 from module.data.vars import TEXT_IDS
+from module.shared import check_log
 from module.utils.multi_lang_utils import get_locale
 
 reg_doc_triennale_L31 = {

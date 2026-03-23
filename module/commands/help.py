@@ -1,8 +1,9 @@
 """/help command"""
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext
-from module.shared import check_log
+
 from module.data.vars import TEXT_IDS
+from module.shared import check_log
 from module.utils.multi_lang_utils import get_locale, get_locale_code
 
 

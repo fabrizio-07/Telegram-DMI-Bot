@@ -2,11 +2,13 @@
 """Professor class"""
 import logging
 from typing import List
+
 import bs4
 import requests
+from telegram.utils.helpers import escape_markdown
+
 from module.data.db_manager import DbManager
 from module.data.scrapable import Scrapable
-from telegram.utils.helpers import escape_markdown
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)

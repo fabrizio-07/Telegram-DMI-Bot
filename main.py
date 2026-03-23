@@ -1,30 +1,41 @@
 # -*- coding: utf-8 -*-
 """Main module"""
+import uvicorn
 from telegram import BotCommand
-from telegram.ext import CallbackQueryHandler, CommandHandler, Dispatcher, Filters, MessageHandler, Updater
+from telegram.ext import (CallbackQueryHandler, CommandHandler, Dispatcher,
+                          Filters, MessageHandler, Updater)
 
-from module.commands.aulario import aulario, calendar_handler, month_handler, subjects_arrow_handler, subjects_handler
-from module.callback_handlers import exit_handler, informative_callback, md_handler, none_handler, submenu_handler, \
-    localization_handler
-from module.commands.esami import esami, esami_handler, esami_input_insegnamento
-from module.commands.lezioni import lezioni, lezioni_handler, lezioni_input_insegnamento
+from module.callback_handlers import (exit_handler, informative_callback,
+                                      localization_handler, md_handler,
+                                      none_handler, submenu_handler)
+from module.commands.aulario import (aulario, calendar_handler, month_handler,
+                                     subjects_arrow_handler, subjects_handler)
+from module.commands.drive_contribute import drive_contribute
+from module.commands.esami import (esami, esami_handler,
+                                   esami_input_insegnamento)
+from module.commands.gdrive import drive, drive_handler
+from module.commands.help import help_cmd
+from module.commands.lezioni import (lezioni, lezioni_handler,
+                                     lezioni_input_insegnamento)
 from module.commands.professori import prof
+from module.commands.regolamento_didattico import (
+    cdl_handler, regolamentodidattico, regolamentodidattico_handler,
+    send_regolamento)
+from module.commands.report import report
 from module.commands.start import start
 from module.commands.stats import stats, stats_tot
-from module.commands.help import help_cmd
-from module.commands.report import report
-from module.commands.gdrive import drive, drive_handler
-from module.commands.drive_contribute import drive_contribute
-from module.commands.regolamento_didattico import regolamentodidattico, regolamentodidattico_handler, cdl_handler, send_regolamento
 from module.data.vars import TEXT_IDS
-from module.easter_egg_func import bladrim, lei_che_ne_pensa_signorina, prof_sticker, santino, smonta_portoni, uni_bandita
+from module.debug import error_handler, log_message
+from module.easter_egg_func import (bladrim, lei_che_ne_pensa_signorina,
+                                    prof_sticker, santino, smonta_portoni,
+                                    uni_bandita)
 from module.gitlab import git, gitlab_handler
 from module.job_updater import updater_lep
 from module.shared import config_map
-from module.utils.multi_lang_utils import load_translations, get_regex_multi_lang
-from module.debug import error_handler, log_message
+from module.utils.multi_lang_utils import (get_regex_multi_lang,
+                                           load_translations)
 from webapp.app import app
-import uvicorn
+
 
 def add_commands(up: Updater) -> None:
     """Adds the list of commands with their description to the bot

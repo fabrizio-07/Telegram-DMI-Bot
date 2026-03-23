@@ -1,7 +1,8 @@
 """Job updater"""
 from telegram.ext import CallbackContext
-from module.shared import check_print_old_exams, get_year_code
+
 from module.data import Exam, Lesson, Professor, TimetableSlot
+from module.shared import check_print_old_exams, get_year_code
 
 
 def updater_lep(_: CallbackContext):

@@ -3,9 +3,9 @@
 from telegram import Update
 from telegram.ext import CallbackContext
 
-from module.data.vars import TEXT_IDS, PLACE_HOLDER
-from module.shared import check_log
 from module.data import Professor
+from module.data.vars import PLACE_HOLDER, TEXT_IDS
+from module.shared import check_log
 from module.utils.multi_lang_utils import get_locale
 
 

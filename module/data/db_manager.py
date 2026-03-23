@@ -1,8 +1,8 @@
 """DBManager class"""
 import logging
-from typing import Tuple
-import sqlite3
 import re
+import sqlite3
+from typing import Tuple
 
 logger = logging.getLogger(__name__)
 

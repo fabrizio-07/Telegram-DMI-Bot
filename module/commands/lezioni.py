@@ -1,20 +1,22 @@
 # -*- coding: utf-8 -*-
 """/lezioni command"""
-import logging
-import re
-import requests
-import os
-import time
 import datetime
-from bs4 import BeautifulSoup
-from typing import Tuple, Optional
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, CallbackQuery
-from telegram.ext import CallbackContext
-from module.data import Lesson
-from module.shared import check_log, send_message, read_md, config_map
-from module.data.vars import TEXT_IDS, PLACE_HOLDER
-from module.utils.multi_lang_utils import get_locale, get_locale_code
+import logging
+import os
+import re
+import time
+from typing import Optional, Tuple
 
+import requests
+from bs4 import BeautifulSoup
+from telegram import (CallbackQuery, InlineKeyboardButton,
+                      InlineKeyboardMarkup, Update)
+from telegram.ext import CallbackContext
+
+from module.data import Lesson
+from module.data.vars import PLACE_HOLDER, TEXT_IDS
+from module.shared import check_log, config_map, read_md, send_message
+from module.utils.multi_lang_utils import get_locale, get_locale_code
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
