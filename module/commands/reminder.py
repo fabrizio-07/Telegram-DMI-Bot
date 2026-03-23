@@ -2,16 +2,24 @@
 """/esami command"""
 
 import ast
+import logging
 import re
+from datetime import datetime
 from typing import List
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext
 
 from module.data import Exam
+from module.data.reminder import ExamRegistration
 from module.data.vars import PLACE_HOLDER, TEXT_IDS
 from module.shared import check_log
 from module.utils.multi_lang_utils import get_locale
+
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
 
 def reminder(update: Update, context: CallbackContext) -> None:
@@ -236,12 +244,39 @@ def reminder_confermato_handler(update: Update, context: CallbackContext):
     chat_id = query.message.chat_id
     message_id = query.message.message_id
 
-    message_text = "Operazione confermata"  # cambiare con messaggi vars
+    # Usiamo .get() per evitare KeyError se lo stash è vuoto
+    u_data = context.user_data.get('reminder', {})
+    raw_date = u_data.get('appello', 'Data selezionata')
 
-    # GESTIRE INSERIMENTO NEL DATABASE
+    # 1. Gestione sicura del parsing della data
+    try:
+        data_obj = datetime.strptime(raw_date, '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        # Fallback se non è nel formato atteso
+        data_obj = raw_date
+
+    # 2. Creazione oggetto
+    nuovo_reminder = ExamRegistration(
+        studenti=str(chat_id),
+        insegnamento=u_data.get('insegnamento', 'N/D'),
+        docenti=u_data.get('professore', 'N/D'),
+        data=data_obj,
+    )
+
+    try:
+        nuovo_reminder.save()
+        message_text = "**Esame Registrato!**\n"
+    except Exception as e:
+        logger.error(f"Errore salvataggio DB: {e}")
+        message_text = "Errore durante il salvataggio dei dati."
+
+    u_data.clear()
 
     context.bot.editMessageText(
-        text=message_text, chat_id=chat_id, message_id=message_id
+        text=message_text,
+        chat_id=chat_id,
+        message_id=message_id,
+        parse_mode='Markdown',
     )
 
 

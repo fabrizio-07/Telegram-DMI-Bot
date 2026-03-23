@@ -35,7 +35,7 @@ class ExamRegistration(Scrapable):
     @property
     def table(self) -> str:
         """name of the database table that will store this Reminder"""
-        return "reminders"
+        return "exams_reg"
 
     @property
     def columns(self) -> tuple:
