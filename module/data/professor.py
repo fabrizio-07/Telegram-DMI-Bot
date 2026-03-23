@@ -1,16 +1,25 @@
 # -*- coding: utf-8 -*-
 """Professor class"""
+
 import logging
 from typing import List
 
 import bs4
 import requests
 from telegram.utils.helpers import escape_markdown
+<<<<<<< HEAD
+
+from module.data.db_manager import DbManager
+from module.data.scrapable import Scrapable
+=======
+>>>>>>> a23dad8adcfa0027f153fe66691245f373165efc
 
 from module.data.db_manager import DbManager
 from module.data.scrapable import Scrapable
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
+)
 logger = logging.getLogger(__name__)
 
 
@@ -37,20 +46,23 @@ class Professor(Scrapable):
         sito (:class:`str`): orcid page of the professor
         photo_id (:class:`str`): photo id of the professor's page
     """
+
     URL_PROF = "http://web.dmi.unict.it/docenti"
 
     # pylint: disable=too-many-arguments
-    def __init__(self,
-                 ID: int = -1,
-                 ruolo: str = "",
-                 nome: str = "",
-                 scheda_dmi: str = "",
-                 fax: str = "",
-                 telefono: str = "",
-                 email: str = "",
-                 ufficio: str = "",
-                 sito: str = "",
-                 photo_id: str = ""):
+    def __init__(
+        self,
+        ID: int = -1,
+        ruolo: str = "",
+        nome: str = "",
+        scheda_dmi: str = "",
+        fax: str = "",
+        telefono: str = "",
+        email: str = "",
+        ufficio: str = "",
+        sito: str = "",
+        photo_id: str = "",
+    ):
         self.ID = ID
         self.ruolo = ruolo
         self.nome = nome
@@ -70,7 +82,52 @@ class Professor(Scrapable):
     @property
     def columns(self) -> tuple:
         """tuple of column names of the database table that will store this Professor"""
-        return ("ID", "ruolo", "nome", "scheda_dmi", "fax", "telefono", "email", "ufficio", "sito", "photo_id")
+        return (
+            "ID",
+            "ruolo",
+            "nome",
+            "scheda_dmi",
+            "fax",
+            "telefono",
+            "email",
+            "ufficio",
+            "sito",
+            "photo_id",
+        )
+
+    @classmethod
+    def _scrape_professor_details(
+        cls, professor: 'Professor', soup: bs4.BeautifulSoup
+    ) -> None:
+        """Fills in extra details (office, email, phone, photo) for a professor from their profile page."""
+        div = soup.find("div", {"class": "card-body"})
+        if not isinstance(div, bs4.Tag):
+            return
+        for bi in div.find_all("b"):
+            if bi.text == "Ufficio:":
+                professor.ufficio = bi.next_sibling
+            elif bi.text == "Email:":
+                email_elem = bi.next_sibling.next_sibling if bi.next_sibling else None
+                if email_elem and hasattr(email_elem, 'text'):
+                    professor.email = email_elem.text
+            elif bi.text == "Sito web:":
+                sito_elem = bi.next_sibling.next_sibling if bi.next_sibling else None
+                if sito_elem and hasattr(sito_elem, 'text'):
+                    professor.sito = sito_elem.text
+            elif bi.text == "Telefono:":
+                professor.telefono = bi.next_sibling
+            elif bi.text == "Fax:":
+                professor.fax = bi.next_sibling
+        avatar_div = soup.find("div", {"class": "avatar size-xxl size-xxxl"})
+        if isinstance(avatar_div, bs4.Tag):
+            img = avatar_div.find("img")
+            if isinstance(img, bs4.Tag):
+                src = img.get("src")
+                professor.photo_id = str(src) if src else "Non presente"
+            else:
+                professor.photo_id = "Non presente"
+        else:
+            professor.photo_id = "Non presente"
 
     @classmethod
     def scrape(cls, delete: bool = False):
@@ -88,6 +145,8 @@ class Professor(Scrapable):
         source = requests.get(cls.URL_PROF, timeout=10).text
         soup = bs4.BeautifulSoup(source, "html.parser")
         table = soup.find(id="persone")
+        if not isinstance(table, bs4.Tag):
+            return
 
         for link in table.find_all("a"):
             if not link.has_attr("name"):
@@ -99,11 +158,19 @@ class Professor(Scrapable):
                 elif mother_tongue:
                     role = "Lettore madrelingua"
                 else:
-                    role = link.parent.next_sibling.text.split(" ")[1] if len(
-                        link.parent.next_sibling.text.split(" ")) > 1 else link.parent.next_sibling.text
+                    role = (
+                        link.parent.next_sibling.text.split(" ")[1]
+                        if len(link.parent.next_sibling.text.split(" ")) > 1
+                        else link.parent.next_sibling.text
+                    )
 
-                if link.parent.parent.next_sibling.next_sibling is not None \
-                        and link.parent.parent.next_sibling.next_sibling.find("td").find("b") is not None:
+                if (
+                    link.parent.parent.next_sibling.next_sibling is not None
+                    and link.parent.parent.next_sibling.next_sibling.find("td").find(
+                        "b"
+                    )
+                    is not None
+                ):
                     contract = False
                     mother_tongue = True
 
@@ -112,28 +179,16 @@ class Professor(Scrapable):
                         mother_tongue = False
 
                 count += 1
-                professor = cls(ID=count, ruolo=role.title(), nome=name, scheda_dmi=f"http://web.dmi.unict.it{href}")
+                professor = cls(
+                    ID=count,
+                    ruolo=role.title(),
+                    nome=name,
+                    scheda_dmi=f"http://web.dmi.unict.it{href}",
+                )
 
                 source = requests.get(professor.scheda_dmi, timeout=10).text
                 soup = bs4.BeautifulSoup(source, "html.parser")
-                div = soup.find("div", {"class": "card-body"})
-                if div is None:
-                    continue
-                for bi in div.find_all("b"):
-                    if bi.text == "Ufficio:":
-                        professor.ufficio = bi.next_sibling
-                    elif bi.text == "Email:":
-                        professor.email = bi.next_sibling.next_sibling.text
-                    elif bi.text == "Sito web:":
-                        professor.sito = bi.next_sibling.next_sibling.text
-                    elif bi.text == "Telefono:":
-                        professor.telefono = bi.next_sibling
-                    elif bi.text == "Fax:":
-                        professor.fax = bi.next_sibling
-                if soup.find("div", {"class": "avatar size-xxl size-xxxl"}):
-                    professor.photo_id = soup.find("div", {"class": "avatar size-xxl size-xxxl"}).find("img").get("src")
-                else:
-                    professor.photo_id = "Non presente"
+                cls._scrape_professor_details(professor, soup)
 
                 professors.append(professor)
 
@@ -143,7 +198,7 @@ class Professor(Scrapable):
         logger.info("Professors loaded.")
 
     @classmethod
-    def find(cls, where_name: str) -> List['Professor']:
+    def find(cls, where_name: List[str]) -> List['Professor']:
         """Produces a list of professors from the database, based on the provided parametes
 
         Args:
@@ -155,9 +210,9 @@ class Professor(Scrapable):
         where = " AND ".join(("nome LIKE ?" for name in where_name))
         where_args = tuple(f'%{name}%' for name in where_name)
 
-        db_results = DbManager.select_from(table_name=cls().table,
-                                           where=where,
-                                           where_args=where_args)
+        db_results = DbManager.select_from(
+            table_name=cls().table, where=where, where_args=where_args
+        )
         return cls._query_result_initializer(db_results)
 
     @classmethod
@@ -173,8 +228,7 @@ class Professor(Scrapable):
         return f"Professor: {self.__dict__}"
 
     def __str__(self):
-        string = f"*Ruolo:* {em(self.ruolo)}\n" \
-                 f"*Nome:* {em(self.nome)}\n"
+        string = f"*Ruolo:* {em(self.ruolo)}\n" f"*Nome:* {em(self.nome)}\n"
         if self.email:
             string += f"*Indirizzo email:* {em(self.email)}\n"
         if self.scheda_dmi:

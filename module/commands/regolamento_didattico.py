@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
 """/regolamentodidattico command"""
+
 from typing import Optional
 
+<<<<<<< HEAD
 from telegram import (CallbackQuery, InlineKeyboardButton,
                       InlineKeyboardMarkup, Update)
+=======
+from telegram import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Update
+>>>>>>> a23dad8adcfa0027f153fe66691245f373165efc
 from telegram.ext import CallbackContext
 
 from module.commands.help import help_cmd
@@ -33,7 +38,7 @@ reg_doc_magistrale_LM18 = {
     'Regolamento Didattico 2018/2019_LM18': 'http://web.dmi.unict.it/sites/default/files/documenti_sito/Regolamento%20Didattico%20LM18%201819.pdf',
     'Regolamento Didattico 2017/2018_LM18': 'http://web.dmi.unict.it/sites/default/files/documenti_sito/Regolamento%20Didattico%20LM18%201718.pdf',
     'Regolamento Didattico 2016/2017_LM18': 'http://web.dmi.unict.it/sites/default/files/documenti_sito/LM%2018%20Informatica_1617.pdf',
-    'Regolamento Didattico 2015/2016_LM18': 'http://web.dmi.unict.it/sites/default/files/documenti_sito/Regolamento%20Didattico%20LM18%201516.pdf'
+    'Regolamento Didattico 2015/2016_LM18': 'http://web.dmi.unict.it/sites/default/files/documenti_sito/Regolamento%20Didattico%20LM18%201516.pdf',
 }
 
 reg_doc_triennale_L35 = {
@@ -47,7 +52,7 @@ reg_doc_triennale_L35 = {
 }
 
 reg_doc_magistrale_LM40 = {
-    'Regolamento Didattico 2022/2023_LM40' : 'http://web.dmi.unict.it/sites/default/files/documenti_sito/LM-40%20Regolamento%202022-23.pdf',
+    'Regolamento Didattico 2022/2023_LM40': 'http://web.dmi.unict.it/sites/default/files/documenti_sito/LM-40%20Regolamento%202022-23.pdf',
     'Regolamento Didattico 2021/2022_LM40': 'http://web.dmi.unict.it/sites/default/files/documenti_sito/Regolamento%20Didattico%20LM%2040%20senato%20approved%20.pdf',
     'Regolamento Didattico 2020/2021_LM40': 'http://web.dmi.unict.it/sites/default/files/documenti_sito/LM%2040_Matematica%202020-21%20approvato%20Senato.pdf',
     'Regolamento Didattico 2019/2020_LM40': 'http://web.dmi.unict.it/sites/default/files/documenti_sito/LM%2040_Matematica%2019-20%20approvato%20senato.pdf',
@@ -58,7 +63,7 @@ REGOLAMENTI = {
     'triennale_L31': reg_doc_triennale_L31,
     'magistrale_LM18': reg_doc_magistrale_LM18,
     'triennale_L35': reg_doc_triennale_L35,
-    'magistrale_LM40': reg_doc_magistrale_LM40
+    'magistrale_LM40': reg_doc_magistrale_LM40,
 }
 
 
@@ -72,7 +77,10 @@ def regolamentodidattico(update: Update, _: CallbackContext) -> None:
     """
     check_log(update, "regolamentodidattico")
     locale: str = update.message.from_user.language_code
-    update.message.reply_text(get_locale(locale, TEXT_IDS.REG_CDL_GRAD_SELECT_TEXT_ID), reply_markup=get_cdl_keyboard(locale))
+    update.message.reply_text(
+        get_locale(locale, TEXT_IDS.REG_CDL_GRAD_SELECT_TEXT_ID),
+        reply_markup=get_cdl_keyboard(locale),
+    )
 
 
 def regolamentodidattico_handler(update: Update, context: CallbackContext) -> None:
@@ -85,37 +93,49 @@ def regolamentodidattico_handler(update: Update, context: CallbackContext) -> No
         context: context passed by the handler
     """
     query: Optional[CallbackQuery] = update.callback_query
+    if not query or not query.data:
+        return
     data: str = query.data.replace("reg_button_", "")
     locale: str = update.callback_query.from_user.language_code
     if data == "home":
-        context.bot.edit_message_text(chat_id=query.message.chat_id,
-                                      message_id=query.message.message_id,
-                                      text=get_locale(locale, TEXT_IDS.REG_CDL_GRAD_SELECT_TEXT_ID),
-                                      reply_markup=get_cdl_keyboard(locale))
+        context.bot.edit_message_text(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id,
+            text=get_locale(locale, TEXT_IDS.REG_CDL_GRAD_SELECT_TEXT_ID),
+            reply_markup=get_cdl_keyboard(locale),
+        )
     elif data == "help":
         help_cmd(query, context, True)
 
     else:
-        context.bot.edit_message_text(chat_id=query.message.chat_id,
-                                      message_id=query.message.message_id,
-                                      text=get_locale(locale, TEXT_IDS.REG_CDL_YEAR_SELECT_TEXT_ID),
-                                      reply_markup=get_cdl_keyboard(locale, reg_doc=REGOLAMENTI[data]))
+        context.bot.edit_message_text(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id,
+            text=get_locale(locale, TEXT_IDS.REG_CDL_YEAR_SELECT_TEXT_ID),
+            reply_markup=get_cdl_keyboard(locale, reg_doc=REGOLAMENTI[data]),
+        )
 
 
 def cdl_handler(update: Update, context: CallbackContext) -> None:
     query: Optional[CallbackQuery] = update.callback_query
+    if not query or not query.data:
+        return
     data: str = query.data.replace("cdl_button_", "")
     locale: str = update.callback_query.from_user.language_code
     if data == "informatica":
-        context.bot.edit_message_text(chat_id=query.message.chat_id,
-                                      message_id=query.message.message_id,
-                                      text=get_locale(locale, TEXT_IDS.REG_CDL_INF_COURSE_TEXT_ID),
-                                      reply_markup=get_inf_keyboard(locale))
+        context.bot.edit_message_text(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id,
+            text=get_locale(locale, TEXT_IDS.REG_CDL_INF_COURSE_TEXT_ID),
+            reply_markup=get_inf_keyboard(locale),
+        )
     else:
-        context.bot.edit_message_text(chat_id=query.message.chat_id,
-                                      message_id=query.message.message_id,
-                                      text=get_locale(locale, TEXT_IDS.REG_CDL_MAT_COURSE_TEXT_ID),
-                                      reply_markup=get_mat_keyboard(locale))
+        context.bot.edit_message_text(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id,
+            text=get_locale(locale, TEXT_IDS.REG_CDL_MAT_COURSE_TEXT_ID),
+            reply_markup=get_mat_keyboard(locale),
+        )
 
 
 def send_regolamento(update: Update, context: CallbackContext) -> None:
@@ -127,38 +147,84 @@ def send_regolamento(update: Update, context: CallbackContext) -> None:
         context: context passed by the handler
     """
     query: Optional[CallbackQuery] = update.callback_query
-    data: Optional[str] = query.data
+    if not query or not query.data:
+        return
+    data: str = query.data
     chat_id: int = update.effective_chat.id
     locale: str = update.callback_query.from_user.language_code
     if data in reg_doc_triennale_L31:
         doc = reg_doc_triennale_L31[data]
     elif data in reg_doc_triennale_L35:
         doc = reg_doc_triennale_L35[data]
-    elif data in reg_doc_magistrale_LM18: # pylint: disable=consider-using-get
+    elif data in reg_doc_magistrale_LM18:  # pylint: disable=consider-using-get
         doc = reg_doc_magistrale_LM18[data]
     else:
         doc = reg_doc_magistrale_LM40[data]
 
     context.bot.send_document(chat_id=chat_id, document=doc)
-    context.bot.edit_message_text(chat_id=query.message.chat_id, message_id=query.message.message_id, text=get_locale(locale, TEXT_IDS.REG_CDL_RET_FILE_TEXT_ID), )
+    context.bot.edit_message_text(
+        chat_id=query.message.chat_id,
+        message_id=query.message.message_id,
+        text=get_locale(locale, TEXT_IDS.REG_CDL_RET_FILE_TEXT_ID),
+    )
 
 
 def get_inf_keyboard(locale: str) -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup([[
-        InlineKeyboardButton(get_locale(locale, TEXT_IDS.BACHELOR_TEXT_ID), callback_data='reg_button_triennale_L31'),
-        InlineKeyboardButton(get_locale(locale, TEXT_IDS.MASTER_TEXT_ID), callback_data='reg_button_magistrale_LM18')],
-        [InlineKeyboardButton(get_locale(locale, TEXT_IDS.BACK_TO_MAIN_MENU_KEYBOARD_TEXT_ID), callback_data='reg_button_help')],
-        [InlineKeyboardButton(get_locale(locale, TEXT_IDS.BACK_BUTTON_TEXT_TEXT_ID), callback_data='reg_button_home')]
-    ])
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    get_locale(locale, TEXT_IDS.BACHELOR_TEXT_ID),
+                    callback_data='reg_button_triennale_L31',
+                ),
+                InlineKeyboardButton(
+                    get_locale(locale, TEXT_IDS.MASTER_TEXT_ID),
+                    callback_data='reg_button_magistrale_LM18',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    get_locale(locale, TEXT_IDS.BACK_TO_MAIN_MENU_KEYBOARD_TEXT_ID),
+                    callback_data='reg_button_help',
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    get_locale(locale, TEXT_IDS.BACK_BUTTON_TEXT_TEXT_ID),
+                    callback_data='reg_button_home',
+                )
+            ],
+        ]
+    )
 
 
 def get_mat_keyboard(locale: str) -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup([[
-        InlineKeyboardButton(get_locale(locale, TEXT_IDS.BACHELOR_TEXT_ID), callback_data='reg_button_triennale_L35'),
-        InlineKeyboardButton(get_locale(locale, TEXT_IDS.MASTER_TEXT_ID), callback_data='reg_button_magistrale_LM40')],
-        [InlineKeyboardButton(get_locale(locale, TEXT_IDS.BACK_TO_MAIN_MENU_KEYBOARD_TEXT_ID), callback_data='reg_button_help')],
-        [InlineKeyboardButton(get_locale(locale, TEXT_IDS.BACK_BUTTON_TEXT_TEXT_ID), callback_data='reg_button_home')]
-    ])
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    get_locale(locale, TEXT_IDS.BACHELOR_TEXT_ID),
+                    callback_data='reg_button_triennale_L35',
+                ),
+                InlineKeyboardButton(
+                    get_locale(locale, TEXT_IDS.MASTER_TEXT_ID),
+                    callback_data='reg_button_magistrale_LM40',
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    get_locale(locale, TEXT_IDS.BACK_TO_MAIN_MENU_KEYBOARD_TEXT_ID),
+                    callback_data='reg_button_help',
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    get_locale(locale, TEXT_IDS.BACK_BUTTON_TEXT_TEXT_ID),
+                    callback_data='reg_button_home',
+                )
+            ],
+        ]
+    )
 
 
 def get_cdl_keyboard(locale: str, reg_doc: dict = None) -> InlineKeyboardMarkup:
@@ -174,13 +240,42 @@ def get_cdl_keyboard(locale: str, reg_doc: dict = None) -> InlineKeyboardMarkup:
     """
 
     if reg_doc is None:
-        return InlineKeyboardMarkup([[
-            InlineKeyboardButton('Informatica', callback_data='cdl_button_informatica'),
-            InlineKeyboardButton('Matematica', callback_data='cdl_button_matematica')],
-            [InlineKeyboardButton(get_locale(locale, TEXT_IDS.BACK_BUTTON_TEXT_TEXT_ID), callback_data='reg_button_help')]
-        ])
-    keyboard = [[InlineKeyboardButton(r.split('_')[0], callback_data=r)] for r in reg_doc]
-    keyboard.append([InlineKeyboardButton(get_locale(locale, TEXT_IDS.BACK_TO_MAIN_MENU_KEYBOARD_TEXT_ID), callback_data='reg_button_help')])
-    keyboard.append([InlineKeyboardButton(get_locale(locale, TEXT_IDS.BACK_BUTTON_TEXT_TEXT_ID), callback_data='reg_button_home')])
+        return InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        'Informatica', callback_data='cdl_button_informatica'
+                    ),
+                    InlineKeyboardButton(
+                        'Matematica', callback_data='cdl_button_matematica'
+                    ),
+                ],
+                [
+                    InlineKeyboardButton(
+                        get_locale(locale, TEXT_IDS.BACK_BUTTON_TEXT_TEXT_ID),
+                        callback_data='reg_button_help',
+                    )
+                ],
+            ]
+        )
+    keyboard = [
+        [InlineKeyboardButton(r.split('_')[0], callback_data=r)] for r in reg_doc
+    ]
+    keyboard.append(
+        [
+            InlineKeyboardButton(
+                get_locale(locale, TEXT_IDS.BACK_TO_MAIN_MENU_KEYBOARD_TEXT_ID),
+                callback_data='reg_button_help',
+            )
+        ]
+    )
+    keyboard.append(
+        [
+            InlineKeyboardButton(
+                get_locale(locale, TEXT_IDS.BACK_BUTTON_TEXT_TEXT_ID),
+                callback_data='reg_button_home',
+            )
+        ]
+    )
 
     return InlineKeyboardMarkup(keyboard)

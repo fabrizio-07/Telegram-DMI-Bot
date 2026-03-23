@@ -1,4 +1,5 @@
 """/report command"""
+
 from typing import Optional
 
 from telegram import Update, User
@@ -25,13 +26,22 @@ def report(update: Update, context: CallbackContext) -> None:
     locale: str = update.message.from_user.language_code
 
     if chat_id < 0:
-        context.bot.sendMessage(chat_id=chat_id, text=get_locale(locale, TEXT_IDS.REPORT_ON_GROUP_WARNING_TEXT_ID).replace(PLACE_HOLDER, executed_command))
-    elif not chat_user.username:
-        context.bot.sendMessage(chat_id=chat_id, text=get_locale(locale, TEXT_IDS.REPORT_NO_USERNAME_WARNING_TEXT_ID).replace(PLACE_HOLDER, executed_command))
+        context.bot.sendMessage(
+            chat_id=chat_id,
+            text=get_locale(locale, TEXT_IDS.REPORT_ON_GROUP_WARNING_TEXT_ID).replace(
+                PLACE_HOLDER, executed_command
+            ),
+        )
+    elif not chat_user or not chat_user.username:
+        context.bot.sendMessage(
+            chat_id=chat_id,
+            text=get_locale(
+                locale, TEXT_IDS.REPORT_NO_USERNAME_WARNING_TEXT_ID
+            ).replace(PLACE_HOLDER, executed_command),
+        )
     else:
         if context.args:
-            message = "⚠ Report ⚠\n"\
-                        f"Username: @{chat_user.username}\n"
+            message = "⚠ Report ⚠\n" f"Username: @{chat_user.username}\n"
 
             if chat_user.first_name is not None:
                 message += f"Nome/Name: {chat_user.first_name}\n"
@@ -40,9 +50,17 @@ def report(update: Update, context: CallbackContext) -> None:
 
             message += f"Segnalazione/Content: {' '.join(context.args)}\n"
 
-            context.bot.sendMessage(chat_id=config_map['representatives_group'], text=message)
-            context.bot.sendMessage(chat_id=chat_id,
-                                    text=get_locale(locale, TEXT_IDS.REPORT_RESPONSE_TEXT_ID).replace(PLACE_HOLDER, message))
+            context.bot.sendMessage(
+                chat_id=config_map['representatives_group'], text=message
+            )
+            context.bot.sendMessage(
+                chat_id=chat_id,
+                text=get_locale(locale, TEXT_IDS.REPORT_RESPONSE_TEXT_ID).replace(
+                    PLACE_HOLDER, message
+                ),
+            )
         else:
-            context.bot.sendMessage(chat_id=chat_id,
-                                    text=get_locale(locale, TEXT_IDS.REPORT_WARNING_TEXT_ID))
+            context.bot.sendMessage(
+                chat_id=chat_id,
+                text=get_locale(locale, TEXT_IDS.REPORT_WARNING_TEXT_ID),
+            )

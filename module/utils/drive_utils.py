@@ -24,14 +24,18 @@ class DriveUtils:
             self._gdrive = GoogleDrive(gauth)
         return self._gdrive
 
-    def list_files(self, folder_id: Optional[str] = None) -> Optional[GoogleDriveFileList]:
+    def list_files(
+        self, folder_id: Optional[str] = None
+    ) -> Optional[GoogleDriveFileList]:
         'Returns a list of files or folders in the given directory'
         folder_id = folder_id or self.config_map['drive_folder_id']
         try:
-            return self.gdrive.ListFile({
-                'q': f"'{folder_id}' in parents and trashed=false",
-                'orderBy': 'folder,title',
-            }).GetList()
+            return self.gdrive.ListFile(
+                {
+                    'q': f"'{folder_id}' in parents and trashed=false",
+                    'orderBy': 'folder,title',
+                }
+            ).GetList()
         # pylint: disable=broad-except
         except Exception as e:
             log_error(header="drive_handler", error=e)

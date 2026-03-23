@@ -1,4 +1,5 @@
 """Test configuration"""
+
 import asyncio
 import warnings
 
@@ -75,7 +76,9 @@ async def bot():
 
 
 @pytest.fixture(scope="session")
-async def client(bot) -> TelegramClient:
+async def client() -> (
+    TelegramClient
+):  # pylint: disable=redefined-outer-name,unused-argument
     """Called at the beginning of the testing session.
     Creates the telegram client that will simulate the user
 

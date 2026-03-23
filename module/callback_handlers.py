@@ -1,5 +1,9 @@
 """Common query callback families"""
+<<<<<<< HEAD
 import logging  # pylint: disable=unused-import
+=======
+
+>>>>>>> a23dad8adcfa0027f153fe66691245f373165efc
 from typing import Optional
 
 from telegram import CallbackQuery, ParseMode, Update
@@ -8,12 +12,26 @@ from telegram.ext import CallbackContext
 from module.commands.aulario import *  # pylint: disable=wildcard-import,unused-wildcard-import
 from module.commands.drive_contribute import *  # pylint: disable=wildcard-import,unused-wildcard-import
 from module.commands.esami import (  # pylint: disable=unused-import
+<<<<<<< HEAD
     esami_button_anno, esami_button_insegnamento, esami_button_sessione)
 from module.commands.help import *  # pylint: disable=wildcard-import,unused-wildcard-import
 from module.commands.lezioni import (  # pylint: disable=unused-import
     lezioni_button_anno, lezioni_button_giorno, lezioni_button_insegnamento)
+=======
+    esami_button_anno,
+    esami_button_insegnamento,
+    esami_button_sessione,
+)
+from module.commands.help import *  # pylint: disable=wildcard-import,unused-wildcard-import
+from module.commands.lezioni import (  # pylint: disable=unused-import
+    lezioni_button_anno,
+    lezioni_button_giorno,
+    lezioni_button_insegnamento,
+)
+>>>>>>> a23dad8adcfa0027f153fe66691245f373165efc
 from module.data.vars import ON_DEMAND_TEXTS
 from module.shared import check_log, read_md
+
 # Needed to correctly run functions using globals()
 from module.utils.multi_lang_utils import get_on_demand_text
 
@@ -29,9 +47,11 @@ def submenu_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     data = query.data
 
-    func_name = data[3:len(data)]
+    func_name = data[3 : len(data)]
     try:
-        globals()[func_name](query, context, query.message.chat_id, query.message.message_id)
+        globals()[func_name](
+            query, context, query.message.chat_id, query.message.message_id
+        )
     except Exception as e:  # pylint: disable=bare-except,broad-except
         print(str(e))
         globals()[func_name](query, context)
@@ -46,11 +66,17 @@ def localization_handler(update: Update, context: CallbackContext) -> None:
     """
     locale: str = update.callback_query.from_user.language_code
     query: Optional[CallbackQuery] = update.callback_query
+    if not query or not query.data:
+        return
     data: str = query.data.replace("localization_", "")
     message_text: str = get_on_demand_text(locale, data)
     check_log(update, data, is_query=True)
-    context.bot.editMessageText(text=message_text, chat_id=query.message.chat_id, message_id=query.message.message_id,
-                                parse_mode=ParseMode.MARKDOWN)
+    context.bot.editMessageText(
+        text=message_text,
+        chat_id=query.message.chat_id,
+        message_id=query.message.message_id,
+        parse_mode=ParseMode.MARKDOWN,
+    )
 
 
 def md_handler(update: Update, context: CallbackContext) -> None:
@@ -67,8 +93,13 @@ def md_handler(update: Update, context: CallbackContext) -> None:
 
     check_log(update, data, is_query=True)
     if_disable_preview = data == "faq"
-    context.bot.editMessageText(text=message_text, chat_id=query.message.chat_id, message_id=query.message.message_id,
-                                parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=if_disable_preview)
+    context.bot.editMessageText(
+        text=message_text,
+        chat_id=query.message.chat_id,
+        message_id=query.message.message_id,
+        parse_mode=ParseMode.MARKDOWN,
+        disable_web_page_preview=if_disable_preview,
+    )
 
 
 def informative_callback(update: Update, context: CallbackContext) -> None:
@@ -82,22 +113,31 @@ def informative_callback(update: Update, context: CallbackContext) -> None:
     # controllo per poter gestire i comandi (/comando) e i messaggi inviati premendo i bottoni (❔ Help)
     if update.message.text[0] == '/':
         cmd = update.message.text.split(' ')[0][
-            1:]  #prende solo la prima parola del messaggio (cioè il comando) escludendo lo slash
+            1:
+        ]  # prende solo la prima parola del messaggio (cioè il comando) escludendo lo slash
         if cmd.find('@') != -1:
             cmd = cmd.split('@')[0]
     else:
-        cmd = update.message.text.split(' ')[1].lower()  # prende la prima parola dopo l'emoji
+        cmd = update.message.text.split(' ')[
+            1
+        ].lower()  # prende la prima parola dopo l'emoji
     if cmd in ON_DEMAND_TEXTS.values():
         index_key: int = list(ON_DEMAND_TEXTS.values()).index(cmd)
-        message_text: str = get_on_demand_text(locale, list(ON_DEMAND_TEXTS.keys())[index_key])
+        message_text: str = get_on_demand_text(
+            locale, list(ON_DEMAND_TEXTS.keys())[index_key]
+        )
     else:
         if cmd == "report":
             cmd = "segnalazione"
         message_text = read_md(cmd)
     check_log(update, cmd)
     if_disable_preview = cmd in ('cloud', 'faq')
-    context.bot.sendMessage(chat_id=update.message.chat_id, text=message_text, parse_mode=ParseMode.MARKDOWN,
-                            disable_web_page_preview=if_disable_preview)
+    context.bot.sendMessage(
+        chat_id=update.message.chat_id,
+        text=message_text,
+        parse_mode=ParseMode.MARKDOWN,
+        disable_web_page_preview=if_disable_preview,
+    )
 
 
 def none_handler(update: Update, _: CallbackContext) -> None:
@@ -120,4 +160,6 @@ def exit_handler(update: Update, context: CallbackContext) -> None:
         context: context passed by the handler
     """
     query = update.callback_query
-    context.bot.deleteMessage(chat_id=query.message.chat_id, message_id=query.message.message_id)
+    context.bot.deleteMessage(
+        chat_id=query.message.chat_id, message_id=query.message.message_id
+    )

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Nobody knows what those functions do"""
+
 import sqlite3
 
 from telegram import Update
@@ -50,5 +51,9 @@ def lei_che_ne_pensa_signorina(update: Update, context: CallbackContext):
 def uni_bandita(update: Update, context: CallbackContext):
     check_log(update, "uni_bandita")
     message_text = EasterEgg.get_uni_bandita()
-    context.bot.sendMessage(chat_id=update.message.chat_id, text=message_text, parse_mode="Markdown",
-                            disable_web_page_preview=True)
+    context.bot.sendMessage(
+        chat_id=update.message.chat_id,
+        text=message_text,
+        parse_mode="Markdown",
+        disable_web_page_preview=True,
+    )
