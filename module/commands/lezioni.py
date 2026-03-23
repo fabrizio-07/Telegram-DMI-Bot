@@ -1,15 +1,10 @@
 # -*- coding: utf-8 -*-
 """/lezioni command"""
-<<<<<<< HEAD
-=======
-
->>>>>>> a23dad8adcfa0027f153fe66691245f373165efc
 import datetime
 import logging
 import os
 import re
 import time
-<<<<<<< HEAD
 from typing import Optional, Tuple
 
 import requests
@@ -24,23 +19,6 @@ from module.shared import check_log, config_map, read_md, send_message
 from module.utils.multi_lang_utils import get_locale, get_locale_code
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-=======
-from typing import List, Optional, Tuple
-
-import requests
-from bs4 import BeautifulSoup
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import CallbackContext
-
-from module.data import Lesson
-from module.data.vars import PLACE_HOLDER, TEXT_IDS
-from module.shared import check_log, config_map, read_md, send_message
-from module.utils.multi_lang_utils import get_locale, get_locale_code
-
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
-)
->>>>>>> a23dad8adcfa0027f153fe66691245f373165efc
 logger = logging.getLogger(__name__)
 
 
@@ -59,13 +37,13 @@ def get_url(courses: str) -> str:
         endl_index = courses.find("\n", course_index)
 
         if token_pos != -1:
-            return courses[token_pos + 1 : endl_index]
+            return courses[token_pos + 1:endl_index]
     return ''
 
 
 def get_orario_file() -> Optional[bytes]:
     """Download pdf file from website.
-
+    
     Returns:
         None or downloaded file
     """
@@ -97,67 +75,40 @@ def lezioni(update: Update, context: CallbackContext) -> None:
 
     if 'lezioni' in context.user_data:
         context.user_data[
-            'lezioni'
-        ].clear()  # ripulisce il dict dell'user relativo al comando /lezioni da eventuali dati presenti
+            'lezioni'].clear()  # ripulisce il dict dell'user relativo al comando /lezioni da eventuali dati presenti
     else:
-        context.user_data['lezioni'] = (
-            {}
-        )  # crea il dict che conterrà i dati del comando /lezioni all'interno della key ['lezioni'] di user data
+        context.user_data[
+            'lezioni'] = {}  # crea il dict che conterrà i dati del comando /lezioni all'interno della key ['lezioni'] di user data
 
     user_id: int = update.message.from_user.id
     chat_id: int = update.message.chat_id
     locale: str = update.message.from_user.language_code
 
-    if (
-        chat_id != user_id
-    ):  # forza ad eseguire il comando in una chat privata, anche per evitare di inondare un gruppo con i risultati
-        context.bot.sendMessage(
-            chat_id=chat_id,
-            text=get_locale(locale, TEXT_IDS.USE_WARNING_TEXT_ID).replace(
-                PLACE_HOLDER, "/lezioni"
-            ),
-        )
-        context.bot.sendMessage(
-            chat_id=user_id,
-            text=get_locale(locale, TEXT_IDS.GROUP_WARNING_TEXT_ID).replace(
-                PLACE_HOLDER, "/lezioni"
-            ),
-        )
+    if chat_id != user_id:  # forza ad eseguire il comando in una chat privata, anche per evitare di inondare un gruppo con i risultati
+        context.bot.sendMessage(chat_id=chat_id, text=get_locale(locale, TEXT_IDS.USE_WARNING_TEXT_ID).replace(PLACE_HOLDER, "/lezioni"))
+        context.bot.sendMessage(chat_id=user_id, text=get_locale(locale, TEXT_IDS.GROUP_WARNING_TEXT_ID).replace(PLACE_HOLDER, "/lezioni"))
 
-    if os.path.exists(config_map['lectures']['file_orario_path']):  # Exist local file
+    if os.path.exists(config_map['lectures']['file_orario_path']): # Exist local file
         current_time = time.time()
-        file_modified_time = os.path.getmtime(
-            config_map['lectures']['file_orario_path']
-        )
+        file_modified_time = os.path.getmtime(config_map['lectures']['file_orario_path'])
         time_difference = current_time - file_modified_time
-        formatted_time = datetime.datetime.fromtimestamp(file_modified_time).strftime(
-            '%d-%m-%Y %H:%M:%S'
-        )
+        formatted_time= datetime.datetime.fromtimestamp(file_modified_time).strftime('%d-%m-%Y %H:%M:%S')
 
-        if time_difference < config_map['lectures']['expire_time']:  # File not expired
+        if time_difference < config_map['lectures']['expire_time']: # File not expired
             with open(config_map['lectures']['file_orario_path'], "rb") as file:
-                context.bot.sendDocument(
-                    chat_id=update.effective_chat.id, document=file
-                )
-                context.bot.sendMessage(
-                    chat_id=chat_id, text=f"Ultimo aggiornamento: {formatted_time}"
-                )
+                context.bot.sendDocument(chat_id=update.effective_chat.id, document=file)
+                context.bot.sendMessage(chat_id=chat_id, text=f"Ultimo aggiornamento: {formatted_time}")
                 return
-        else:  # Not exists local file, so download it
+        else: # Not exists local file, so download it
             pass
 
-    pdf_content = get_orario_file()
+    file = get_orario_file()
 
-    if pdf_content is None:
-        context.bot.sendMessage(
-            chat_id=chat_id,
-            text="Orario non disponibile attualmente. Ritenta più tardi",
-        )
+    if file is None:
+        context.bot.sendMessage(chat_id=chat_id, text="Orario non disponibile attualmente. Ritenta più tardi")
         if os.path.exists(config_map['lectures']['file_orario_path']):
             with open(config_map['lectures']['file_orario_path'], "rb") as file:
-                context.bot.sendDocument(
-                    chat_id=update.effective_chat.id, document=file
-                )
+                context.bot.sendDocument(chat_id=update.effective_chat.id, document=file)
     else:
         with open(config_map['lectures']['file_orario_path'], "rb") as file:
             context.bot.sendDocument(chat_id=update.effective_chat.id, document=file)
@@ -176,11 +127,9 @@ def lezioni_handler(update: Update, context: CallbackContext) -> None:
         update: update event
         context: context passed by the handler
     """
-    callback_data: Optional[str] = update.callback_query.data
+    callback_data: Optional[CallbackQuery] = update.callback_query.data
     chat_id: int = update.callback_query.message.chat_id
     message_id: int = update.callback_query.message.message_id
-    if not context.user_data or 'lezioni' not in context.user_data or not callback_data:
-        return
     lezioni_user_data = context.user_data['lezioni']
     locale: str = update.callback_query.from_user.language_code
     if "anno" in callback_data:
@@ -198,34 +147,21 @@ def lezioni_handler(update: Update, context: CallbackContext) -> None:
             # ... o elmina la key se era già presente
             del lezioni_user_data[callback_data[22:]]
     elif "search" in callback_data:
-        message_text = generate_lezioni_text(
-            locale, lezioni_user_data
-        )  # ottieni il risultato della query che soddisfa le richieste
-        context.bot.editMessageText(
-            chat_id=chat_id,
-            message_id=message_id,
-            text=update.callback_query.message.text,
-        )
-        send_message(
-            update, context, message_text
-        )  # manda il risutato della query suddividendo la stringa in più messaggi
+        message_text = generate_lezioni_text(locale,
+                                             lezioni_user_data)  # ottieni il risultato della query che soddisfa le richieste
+        context.bot.editMessageText(chat_id=chat_id, message_id=message_id, text=update.callback_query.message.text)
+        send_message(update, context,
+                     message_text)  # manda il risutato della query suddividendo la stringa in più messaggi
         lezioni_user_data.clear()  # ripulisci il dict
         return
     else:
         logger.error("lezioni_handler: an error has occurred")
 
     message_text, inline_keyboard = get_lezioni_text_InLineKeyboard(locale, context)
-    context.bot.editMessageText(
-        text=message_text,
-        chat_id=chat_id,
-        message_id=message_id,
-        reply_markup=inline_keyboard,
-    )
+    context.bot.editMessageText(text=message_text, chat_id=chat_id, message_id=message_id, reply_markup=inline_keyboard)
 
 
-def lezioni_button_anno(
-    update: Update, context: CallbackContext, chat_id, message_id
-) -> None:
+def lezioni_button_anno(update: Update, context: CallbackContext, chat_id, message_id) -> None:
     """Called by one of the buttons of the /lezioni command.
     Allows the user to choose an year among the ones proposed
 
@@ -238,35 +174,21 @@ def lezioni_button_anno(
     locale: str = get_locale_code(update)
     message_text: str = get_locale(locale, TEXT_IDS.SELECT_YEAR_TEXT_ID)
 
-    keyboard: List[List[InlineKeyboardButton]] = [[]]
-    keyboard.append(
-        [
-            InlineKeyboardButton(
-                get_locale(locale, TEXT_IDS.YEAR_1ST_TEXT_ID),
-                callback_data="lezioni_button_anno_1 anno",
-            ),
-            InlineKeyboardButton(
-                get_locale(locale, TEXT_IDS.YEAR_2ND_TEXT_ID),
-                callback_data="lezioni_button_anno_2 anno",
-            ),
-            InlineKeyboardButton(
-                get_locale(locale, TEXT_IDS.YEAR_3RD_TEXT_ID),
-                callback_data="lezioni_button_anno_3 anno",
-            ),
-        ]
-    )
+    keyboard = [[]]
+    keyboard.append([
+        InlineKeyboardButton(get_locale(locale, TEXT_IDS.YEAR_1ST_TEXT_ID),
+                             callback_data="lezioni_button_anno_1 anno"),
+        InlineKeyboardButton(get_locale(locale, TEXT_IDS.YEAR_2ND_TEXT_ID),
+                             callback_data="lezioni_button_anno_2 anno"),
+        InlineKeyboardButton(get_locale(locale, TEXT_IDS.YEAR_3RD_TEXT_ID),
+                             callback_data="lezioni_button_anno_3 anno"),
+    ])
 
-    context.bot.editMessageText(
-        text=message_text,
-        chat_id=chat_id,
-        message_id=message_id,
-        reply_markup=InlineKeyboardMarkup(keyboard),
-    )
+    context.bot.editMessageText(text=message_text, chat_id=chat_id, message_id=message_id,
+                                reply_markup=InlineKeyboardMarkup(keyboard))
 
 
-def lezioni_button_giorno(
-    update: Update, context: CallbackContext, chat_id, message_id
-) -> None:
+def lezioni_button_giorno(update: Update, context: CallbackContext, chat_id, message_id) -> None:
     """Called by one of the buttons of the /lezioni command.
     Allows the user to choose a day among the ones proposed
 
@@ -279,51 +201,29 @@ def lezioni_button_giorno(
     locale: str = get_locale_code(update)
     message_text: str = get_locale(locale, TEXT_IDS.CLASSES_SELECT_DAY_TEXT_ID)
 
-    keyboard: List[List[InlineKeyboardButton]] = [[]]
-    keyboard.append(
-        [
-            InlineKeyboardButton(
-                get_locale(locale, TEXT_IDS.CLASSES_SELECT_DAY1_TEXT_ID),
-                callback_data="lezioni_button_giorno_1 giorno",
-            ),
-            InlineKeyboardButton(
-                get_locale(locale, TEXT_IDS.CLASSES_SELECT_DAY2_TEXT_ID),
-                callback_data="lezioni_button_giorno_2 giorno",
-            ),
-        ]
-    )
-    keyboard.append(
-        [
-            InlineKeyboardButton(
-                get_locale(locale, TEXT_IDS.CLASSES_SELECT_DAY3_TEXT_ID),
-                callback_data="lezioni_button_giorno_3 giorno",
-            ),
-            InlineKeyboardButton(
-                get_locale(locale, TEXT_IDS.CLASSES_SELECT_DAY4_TEXT_ID),
-                callback_data="lezioni_button_giorno_4 giorno",
-            ),
-        ]
-    )
-    keyboard.append(
-        [
-            InlineKeyboardButton(
-                get_locale(locale, TEXT_IDS.CLASSES_SELECT_DAY5_TEXT_ID),
-                callback_data="lezioni_button_giorno_5 giorno",
-            ),
-        ]
-    )
+    keyboard = [[]]
+    keyboard.append([
+        InlineKeyboardButton(get_locale(locale, TEXT_IDS.CLASSES_SELECT_DAY1_TEXT_ID),
+                             callback_data="lezioni_button_giorno_1 giorno"),
+        InlineKeyboardButton(get_locale(locale, TEXT_IDS.CLASSES_SELECT_DAY2_TEXT_ID),
+                             callback_data="lezioni_button_giorno_2 giorno"),
+    ])
+    keyboard.append([
+        InlineKeyboardButton(get_locale(locale, TEXT_IDS.CLASSES_SELECT_DAY3_TEXT_ID),
+                             callback_data="lezioni_button_giorno_3 giorno"),
+        InlineKeyboardButton(get_locale(locale, TEXT_IDS.CLASSES_SELECT_DAY4_TEXT_ID),
+                             callback_data="lezioni_button_giorno_4 giorno"),
+    ])
+    keyboard.append([
+        InlineKeyboardButton(get_locale(locale, TEXT_IDS.CLASSES_SELECT_DAY5_TEXT_ID),
+                             callback_data="lezioni_button_giorno_5 giorno"),
+    ])
 
-    context.bot.editMessageText(
-        text=message_text,
-        chat_id=chat_id,
-        message_id=message_id,
-        reply_markup=InlineKeyboardMarkup(keyboard),
-    )
+    context.bot.editMessageText(text=message_text, chat_id=chat_id, message_id=message_id,
+                                reply_markup=InlineKeyboardMarkup(keyboard))
 
 
-def lezioni_button_insegnamento(
-    update: Update, context: CallbackContext, chat_id, message_id
-) -> None:
+def lezioni_button_insegnamento(update: Update, context: CallbackContext, chat_id, message_id) -> None:
     """Called by one of the buttons of the /lezioni command.
     Allows the user to write the subject they want to search for
 
@@ -335,12 +235,9 @@ def lezioni_button_insegnamento(
     """
     locale: str = get_locale_code(update)
     context.user_data['lezioni'][
-        'cmd'
-    ] = "input_insegnamento"  # è in attesa di un messaggio nel formato corretto che imposti il valore del campo insegnamento
+        'cmd'] = "input_insegnamento"  # è in attesa di un messaggio nel formato corretto che imposti il valore del campo insegnamento
     message_text = get_locale(locale, TEXT_IDS.CLASSES_USAGE_TEXT_ID)
-    context.bot.editMessageText(
-        text=message_text, chat_id=chat_id, message_id=message_id
-    )
+    context.bot.editMessageText(text=message_text, chat_id=chat_id, message_id=message_id)
 
 
 def lezioni_input_insegnamento(update: Update, context: CallbackContext) -> None:
@@ -352,27 +249,18 @@ def lezioni_input_insegnamento(update: Update, context: CallbackContext) -> None
         context: context passed by the handler
     """
     locale: str = get_locale_code(update)
-    if (
-        context.user_data['lezioni'].get('cmd', 'null') == "input_insegnamento"
-    ):  # se effettivamente l'user aveva richiesto di modificare l'insegnamento...
+    if context.user_data['lezioni'].get('cmd',
+                                        'null') == "input_insegnamento":  # se effettivamente l'user aveva richiesto di modificare l'insegnamento...
         check_log(update, "lezioni_input_insegnamento")
-        context.user_data['lezioni']['insegnamento'] = re.sub(
-            r"^(?!=<[/])[Nn]ome:\s+", "", update.message.text
-        )  # ottieni il nome dell'insegnamento e salvalo nel dict
+        context.user_data['lezioni']['insegnamento'] = re.sub(r"^(?!=<[/])[Nn]ome:\s+", "",
+                                                              update.message.text)  # ottieni il nome dell'insegnamento e salvalo nel dict
         del context.user_data['lezioni'][
-            'cmd'
-        ]  # elimina la possibilità di modificare l'insegnamento fino a quando l'apposito button non viene premuto di nuovo
+            'cmd']  # elimina la possibilità di modificare l'insegnamento fino a quando l'apposito button non viene premuto di nuovo
         message_text, inline_keyboard = get_lezioni_text_InLineKeyboard(locale, context)
-        context.bot.sendMessage(
-            chat_id=update.message.chat_id,
-            text=message_text,
-            reply_markup=inline_keyboard,
-        )
+        context.bot.sendMessage(chat_id=update.message.chat_id, text=message_text, reply_markup=inline_keyboard)
 
 
-def get_lezioni_text_InLineKeyboard(
-    locale: str, context: CallbackContext
-) -> Tuple[str, InlineKeyboardMarkup]:
+def get_lezioni_text_InLineKeyboard(locale: str, context: CallbackContext) -> Tuple[str, InlineKeyboardMarkup]:
     """Generates the text and the InlineKeyboard for the /lezioni command, based on the current parameters.
 
     Args:
@@ -384,62 +272,32 @@ def get_lezioni_text_InLineKeyboard(
     """
     lezioni_user_data = context.user_data['lezioni']
     # stringa contenente gli anni per cui la flag è true
-    text_anno = ", ".join([key for key in lezioni_user_data if "anno" in key]).replace(
-        "anno", ""
-    )
+    text_anno = ", ".join([key for key in lezioni_user_data if "anno" in key]).replace("anno", "")
     # stringa contenente le lezioni per cui la flag è true
     text_giorno = ", ".join(
-        [
-            Lesson.INT_TO_DAY[key.replace(" giorno", "")]
-            for key in lezioni_user_data
-            if "giorno" in key
-        ]
-    )
+        [Lesson.INT_TO_DAY[key.replace(" giorno", "")] for key in lezioni_user_data if "giorno" in key])
     # stringa contenente l'insegnamento
     text_insegnamento = lezioni_user_data.get("insegnamento", "")
 
     # pylint: disable=consider-using-f-string
-    message_text: str = "{}: {}\n{}: {}\n{}: {}".format(
-        get_locale(locale, TEXT_IDS.SEARCH_YEAR_TEXT_ID),
-        text_anno if text_anno else "tutti",
-        get_locale(locale, TEXT_IDS.SEARCH_DAY_TEXT_ID),
-        text_giorno if text_giorno else "tutti",
-        get_locale(locale, TEXT_IDS.SEARCH_COURSE_TEXT_ID),
-        text_insegnamento if text_insegnamento else "tutti",
-    )
-
-    keyboard: List[List[InlineKeyboardButton]] = [[]]
-    keyboard.append(
-        [
-            InlineKeyboardButton(
-                get_locale(locale, TEXT_IDS.SEARCH_HEADER_TEXT_ID), callback_data="_div"
-            )
-        ]
-    )
-    keyboard.append(
-        [
-            InlineKeyboardButton(
-                get_locale(locale, TEXT_IDS.SEARCH_YEAR_TEXT_ID),
-                callback_data="sm_lezioni_button_anno",
-            ),
-            InlineKeyboardButton(
+    message_text: str = "{}: {}\n{}: {}\n{}: {}" \
+        .format(get_locale(locale, TEXT_IDS.SEARCH_YEAR_TEXT_ID),
+                text_anno if text_anno else "tutti",
                 get_locale(locale, TEXT_IDS.SEARCH_DAY_TEXT_ID),
-                callback_data="sm_lezioni_button_giorno",
-            ),
-        ]
-    )
-    keyboard.append(
-        [
-            InlineKeyboardButton(
+                text_giorno if text_giorno else "tutti",
                 get_locale(locale, TEXT_IDS.SEARCH_COURSE_TEXT_ID),
-                callback_data="sm_lezioni_button_insegnamento",
-            ),
-            InlineKeyboardButton(
-                get_locale(locale, TEXT_IDS.SEARCH_BUTTON_TEXT_ID),
-                callback_data="lezioni_button_search",
-            ),
-        ]
-    )
+                text_insegnamento if text_insegnamento else "tutti")
+
+    keyboard = [[]]
+    keyboard.append([InlineKeyboardButton(get_locale(locale, TEXT_IDS.SEARCH_HEADER_TEXT_ID), callback_data="_div")])
+    keyboard.append([
+        InlineKeyboardButton(get_locale(locale, TEXT_IDS.SEARCH_YEAR_TEXT_ID), callback_data="sm_lezioni_button_anno"),
+        InlineKeyboardButton(get_locale(locale, TEXT_IDS.SEARCH_DAY_TEXT_ID), callback_data="sm_lezioni_button_giorno"),
+    ])
+    keyboard.append([
+        InlineKeyboardButton(get_locale(locale, TEXT_IDS.SEARCH_COURSE_TEXT_ID), callback_data="sm_lezioni_button_insegnamento"),
+        InlineKeyboardButton(get_locale(locale, TEXT_IDS.SEARCH_BUTTON_TEXT_ID), callback_data="lezioni_button_search")
+    ])
 
     return message_text, InlineKeyboardMarkup(keyboard)
 
@@ -456,19 +314,13 @@ def generate_lezioni_text(locale: str, user_dict) -> str:
         result of the query to send to the user
     """
     # stringa contenente i giorni per cui il dict contiene la key, separati da " = '[]' and not "
-    where_giorno = " or giorno_settimana = ".join(
-        [key.replace("giorno", "") for key in user_dict if "giorno" in key]
-    )
+    where_giorno = " or giorno_settimana = ".join([key.replace("giorno", "") for key in user_dict if "giorno" in key])
     # stringa contenente gli anni per cui il dict contiene la key, separate da "' or anno = '"
-    where_anno = " or anno = ".join(
-        [key.replace(" anno", "") for key in user_dict if "anno" in key]
-    )
+    where_anno = " or anno = ".join([key.replace(" anno", "") for key in user_dict if "anno" in key])
     # stringa contenente l'insegnamento, se presente
     where_nome = user_dict.get("insegnamento", "")
 
-    lessons = Lesson.find(
-        where_anno=where_anno, where_giorno=where_giorno, where_nome=where_nome
-    )
+    lessons = Lesson.find(where_anno=where_anno, where_giorno=where_giorno, where_nome=where_nome)
     if len(lessons) > 0:
         output_str = '\n'.join(map(str, lessons))
         output_str += f'\n{get_locale(locale, TEXT_IDS.FOUND_RESULT_TEXT_ID).replace(PLACE_HOLDER, str(len(lessons)))}'

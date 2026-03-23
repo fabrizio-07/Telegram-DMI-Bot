@@ -1,5 +1,4 @@
 """DBManager class"""
-
 import logging
 import re
 import sqlite3
@@ -24,18 +23,11 @@ def dict_factory(cursor: sqlite3.Cursor, row: sqlite3.Row) -> dict:
     return d
 
 
-class DbManager:
+class DbManager():
     """Class that handles the management of databases"""
 
     @classmethod
-    def __query_execute(  # pylint: disable=too-many-arguments
-        cls,
-        cur: sqlite3.Cursor,
-        query: str,
-        args: tuple = None,
-        error_str: str = "",
-        is_many: bool = False,
-    ):
+    def __query_execute(cls, cur: sqlite3.Cursor, query: str, args: tuple = None, error_str: str = "", is_many: bool = False): # pylint: disable=too-many-arguments
         """Materially executes the requested query, while also catching and logging any exception that may be thrown
 
         Args:
@@ -45,20 +37,18 @@ class DbManager:
             error_str: name of the method that caused the exception. Defaults to "".
             is_many: whether to use the :func:`sqlite3.Cursor.executemany` function. Defaults to False.
         """
-        query_func = cur.executemany if is_many else cur.execute  # type: ignore[assignment]
+        query_func = cur.executemany if is_many else cur.execute
 
         try:
             if args:
-                query_func(query, args)  # type: ignore[operator]
+                query_func(query, args)
             else:
-                query_func(query)  # type: ignore[operator]
+                query_func(query)
         except sqlite3.Error as e:
             logger.error("DbManager.%s(): %s", error_str, e)
 
     @staticmethod
-    def get_db(
-        db_path: str = "data/DMI_DB.db",
-    ) -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
+    def get_db(db_path: str = "data/DMI_DB.db") -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
         """Creates the connection to the database
 
         Args:
@@ -106,15 +96,7 @@ class DbManager:
         conn.close()
 
     @classmethod
-    def select_from(  # pylint: disable=too-many-arguments
-        cls,
-        table_name: str,
-        select: str = "*",
-        where: str = "",
-        where_args: tuple = None,
-        group_by: str = "",
-        order_by: str = "",
-    ) -> list:
+    def select_from(cls, table_name: str, select: str = "*", where: str = "", where_args: tuple = None, group_by: str = "", order_by: str = "") -> list: # pylint: disable=too-many-arguments
         """Returns the results of a query.
         Executes "SELECT select FROM table_name [WHERE where (with where_args)] [GROUP BY group_by] [ORDER BY order_by]"
 
@@ -135,12 +117,7 @@ class DbManager:
         order_by = f"ORDER BY {order_by}" if order_by else ""
         group_by = f"GROUP BY {group_by}" if group_by else ""
 
-        cls.__query_execute(
-            cur=cur,
-            query=f"SELECT {select} FROM {table_name} {where} {group_by} {order_by}",
-            args=where_args,
-            error_str="select_from",
-        )
+        cls.__query_execute(cur=cur, query=f"SELECT {select} FROM {table_name} {where} {group_by} {order_by}", args=where_args, error_str="select_from")
 
         query_result = cur.fetchall()
         conn.commit()
@@ -149,14 +126,7 @@ class DbManager:
         return query_result
 
     @classmethod
-    def count_from(  # pylint: disable=too-many-arguments
-        cls,
-        table_name: str,
-        select: str = "*",
-        where: str = "",
-        where_args: tuple = None,
-        group_by: str = "",
-    ) -> int:
+    def count_from(cls, table_name: str, select: str = "*", where: str = "", where_args: tuple = None, group_by: str = "") -> int: # pylint: disable=too-many-arguments
         """Returns the number of rows found with the query.
         Executes "SELECT COUNT(select) FROM table_name [WHERE where (with where_args)]"
 
@@ -175,12 +145,10 @@ class DbManager:
         where = f"WHERE {where}" if where else ""
         group_by = f"GROUP BY {group_by}" if group_by else ""
 
-        cls.__query_execute(
-            cur=cur,
-            query=f"SELECT COUNT({select}) as number FROM {table_name} {where} {group_by}",
-            args=where_args,
-            error_str="count_from",
-        )
+        cls.__query_execute(cur=cur,
+                            query=f"SELECT COUNT({select}) as number FROM {table_name} {where} {group_by}",
+                            args=where_args,
+                            error_str="count_from")
 
         query_result = cur.fetchall()
         conn.commit()
@@ -189,13 +157,7 @@ class DbManager:
         return query_result[0]['number'] if len(query_result) > 0 else 0
 
     @classmethod
-    def insert_into(
-        cls,
-        table_name: str,
-        values: tuple,
-        columns: tuple = (),
-        multiple_rows: bool = False,
-    ):
+    def insert_into(cls, table_name: str, values: tuple, columns: tuple = "", multiple_rows: bool = False):
         """Inserts the specified values in the database.
         Executes "INSERT INTO table_name ([columns]) VALUES (placeholders)"
 
@@ -212,17 +174,14 @@ class DbManager:
         else:
             placeholders = ", ".join(["?" for _ in values])
 
-        columns_str = ""
         if columns:
-            columns_str = "(" + ", ".join(columns) + ")"
+            columns = "(" + ", ".join(columns) + ")"
 
-        cls.__query_execute(
-            cur=cur,
-            query=f"INSERT INTO {table_name} {columns_str} VALUES ({placeholders})",
-            args=values,
-            error_str="insert_into",
-            is_many=multiple_rows,
-        )
+        cls.__query_execute(cur=cur,
+                            query=f"INSERT INTO {table_name} {columns} VALUES ({placeholders})",
+                            args=values,
+                            error_str="insert_into",
+                            is_many=multiple_rows)
 
         conn.commit()
         cur.close()
@@ -242,16 +201,10 @@ class DbManager:
 
         where = f"WHERE {where}" if where else ""
 
-        cls.__query_execute(
-            cur=cur,
-            query=f"DELETE FROM {table_name} {where}",
-            args=where_args,
-            error_str="delete_from",
-        )
+        cls.__query_execute(cur=cur, query=f"DELETE FROM {table_name} {where}", args=where_args, error_str="delete_from")
 
         conn.commit()
         cur.close()
         conn.close()
-
 
 DbManager.query_from_file()  # makes sure the database is correctly initialized

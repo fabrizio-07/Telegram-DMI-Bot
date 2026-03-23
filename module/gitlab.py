@@ -7,11 +7,6 @@ import os
 import re
 import sqlite3
 import time
-<<<<<<< HEAD
-=======
-from typing import Optional
-
->>>>>>> a23dad8adcfa0027f153fe66691245f373165efc
 # System libraries
 from urllib.parse import quote
 
@@ -20,24 +15,18 @@ import requests
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext, run_async
 
-<<<<<<< HEAD
 #Modules
-=======
-# Modules
->>>>>>> a23dad8adcfa0027f153fe66691245f373165efc
 from module.debug.log_manager import notify_error_admin
 from module.shared import check_log, config_map
 
 # Logger
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
-)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 GITLAB_AUTH_TOKEN = config_map['gitlab']['token']
 GITLAB_ROOT_GROUP = config_map['gitlab']['root']
 
-session: Optional[requests.Session] = None
+session = None
 api = None
 db = None
 
@@ -48,7 +37,7 @@ formats = {
     **dict.fromkeys(["jpg", "jpeg", "bmp", "png", "gif"], "📷"),
     **dict.fromkeys(["rar", "zip"], "🗄"),
     **dict.fromkeys(["out", "exe"], "⚙"),
-    **dict.fromkeys(["c", "cc", "cpp", "h", "py", "java", "js", "html", "php"], "💻"),
+    **dict.fromkeys(["c", "cc", "cpp", "h", "py", "java", "js", "html", "php"], "💻")
 }
 
 
@@ -59,20 +48,17 @@ def git(update: Update, context: CallbackContext):
     executed_command = update.message.text.split(' ')[0]
 
     if chat_id < 0:
-        context.bot.sendMessage(
-            chat_id=chat_id,
-            text=f"❗️ La funzione {executed_command} non è ammessa nei gruppi",
-        )
+        context.bot.sendMessage(chat_id=chat_id, text=f"❗️ La funzione {executed_command} non è ammessa nei gruppi")
     else:
         gitlab_handler(update, context)
 
 
 def new_session(token):
     """
-    Create a new session using the authentication token passed as argument.
+        Create a new session using the authentication token passed as argument.
 
-    Parameters:
-        token: Authentication Token for GitLab APIs
+        Parameters:
+            token: Authentication Token for GitLab APIs
     """
 
     global session
@@ -82,7 +68,7 @@ def new_session(token):
 
 
 def init_api():
-    """Initialize the GitLab APIs"""
+    """ Initialize the GitLab APIs """
 
     global api
 
@@ -95,10 +81,10 @@ def init_api():
 
 def get_chat_id(update: Update):
     """
-    Return the chat ID from update object
+        Return the chat ID from update object
 
-    Parameters:
-        update: "update" object of Telegram API
+        Parameters:
+            update: "update" object of Telegram API
     """
 
     chat_id = None
@@ -114,10 +100,10 @@ def get_chat_id(update: Update):
 
 def get_subgroups(context, group_id):
     """
-    Returns an array containing subgroups of a group
+        Returns an array containing subgroups of a group
 
-    Paramaters:
-        group_id: Parent group ID
+        Paramaters:
+            group_id: Parent group ID
     """
 
     try:
@@ -133,10 +119,10 @@ def get_subgroups(context, group_id):
 
 def get_projects(group_id):
     """
-    Returns an array containing projects of a group
+        Returns an array containing projects of a group
 
-    Paramaters:
-        group_id: Parent group ID
+        Paramaters:
+            group_id: Parent group ID
     """
 
     try:
@@ -147,31 +133,28 @@ def get_projects(group_id):
 
 def get_repository_tree(project_id, path='/', recursive=False):
     """
-    Return the repository tree
+        Return the repository tree
 
-    Parameters:
-        project_id: Project ID
-        path: Folder path of the project (default: '/')
-        recursive: If True return every file or directory of the repository (default: False)
+        Parameters:
+            project_id: Project ID
+            path: Folder path of the project (default: '/')
+            recursive: If True return every file or directory of the repository (default: False)
     """
 
     try:
-        return api.projects.get(project_id).repository_tree(
-            path=path, recursive=recursive
-        )
+        return api.projects.get(project_id).repository_tree(path=path, recursive=recursive)
     except gitlab.GitlabGetError:
         return None
-
 
 # pylint: disable=redefined-outer-name
 def explore_repository_tree(origin_id, path='/', db=None):
     """
-    Explore a repository analyzing for files and directories
+        Explore a repository analyzing for files and directories
 
-    Parameters:
-        origin_id: Origin repository ID
-        path: (default: '/')
-        db: (default: None)
+        Parameters:
+            origin_id: Origin repository ID
+            path: (default: '/')
+            db: (default: None)
     """
 
     buttons = []
@@ -182,39 +165,27 @@ def explore_repository_tree(origin_id, path='/', db=None):
             continue
 
         if db:
-            db.execute(
-                "INSERT OR REPLACE INTO gitlab (id, parent_id, name, pathname, type) VALUES (?, ?, ?, ?, ?)",
-                (item['id'], origin_id, item['name'], item['path'], item['type']),
-            )
+            db.execute("INSERT OR REPLACE INTO gitlab (id, parent_id, name, pathname, type) VALUES (?, ?, ?, ?, ?)",
+                       (item['id'], origin_id, item['name'], item['path'], item['type']))
 
         if item['type'] == 'blob':
             item_extension = os.path.splitext(item['name'])[1].replace('.', '')
             format_icon = formats.get(item_extension, "📄")
 
-            buttons.append(
-                InlineKeyboardButton(
-                    f"{format_icon} {item['name']}",
-                    callback_data=f'git_b_{origin_id}_{item["id"]}',
-                )
-            )
+            buttons.append(InlineKeyboardButton(f"{format_icon} {item['name']}", callback_data=f'git_b_{origin_id}_{item["id"]}'))
         elif item['type'] == 'tree':
-            buttons.append(
-                InlineKeyboardButton(
-                    f"🗂 {item['name']}", callback_data=f'git_t_{origin_id}_{item["id"]}'
-                )
-            )
+            buttons.append(InlineKeyboardButton(f"🗂 {item['name']}", callback_data=f'git_t_{origin_id}_{item["id"]}'))
 
     return buttons
-
 
 # pylint: disable=inconsistent-return-statements
 def get_blob_file(project_id, blob_id):
     """
-    Return blob object
+        Return blob object
 
-    Parameters:
-        project_id: Project ID
-        blob_id: Blob ID
+        Parameters:
+            project_id: Project ID
+            blob_id: Blob ID
     """
 
     try:
@@ -235,18 +206,16 @@ def get_blob_file(project_id, blob_id):
 
 
 @run_async
-def download_blob_file_async_internal(
-    update: Update, context: CallbackContext, blob_id, blob_name, db_result
-):
+def download_blob_file_async_internal(update: Update, context: CallbackContext, blob_id, blob_name, db_result):
     """
-    Download a file asynchronously and send it if the size is less than 50MB, otherwise send the download link
+        Download a file asynchronously and send it if the size is less than 50MB, otherwise send the download link
 
-    Parameters:
-        bot: "bot" object of Telegram API
-        update: "update" object of Telegram API
-        blob_id: The id of file to download
-        blob_name: The name of file to download
-        db_result: The result of query to achieve web_url, pathname and parent_id
+        Parameters:
+            bot: "bot" object of Telegram API
+            update: "update" object of Telegram API
+            blob_id: The id of file to download
+            blob_name: The name of file to download
+            db_result: The result of query to achieve web_url, pathname and parent_id
     """
 
     chat_id = get_chat_id(update)
@@ -254,16 +223,11 @@ def download_blob_file_async_internal(
     if chat_id:
         web_url, pathname, parent_id = db_result
         blob_info = get_blob_file(parent_id, blob_id)
-        if blob_info is None:
-            return
         download_url = f"{web_url}/raw/master/{quote(pathname)}"
 
-        size = blob_info.get('size', 0) if blob_info else 0  # type: ignore[union-attr]
-        if size and int(size) < 4.5e7:
+        if int(blob_info['size']) < 4.5e+7:
             file_name = f"{time.time()}_{blob_name}"
 
-            if session is None:
-                return
             file_path = f'file/{file_name}'
             with open(file_path, 'wb') as file_handle:
                 with session.get(download_url, stream=True) as download:
@@ -275,27 +239,22 @@ def download_blob_file_async_internal(
 
             os.remove(file_path)
         else:
-            context.bot.sendMessage(
-                chat_id=chat_id,
-                text=f"⚠️ Il file è troppo grande per il download diretto!\nScaricalo al seguente link:\n{download_url}",
-            )
+            context.bot.sendMessage(chat_id=chat_id,
+                                    text=f"⚠️ Il file è troppo grande per il download diretto!\nScaricalo al seguente link:\n{download_url}")
 
 
 def download_blob_file_async(update: Update, context: CallbackContext, blob=None):
     """
-    Return the handle to the file if below the maximum size otherwise the download link
+        Return the handle to the file if below the maximum size otherwise the download link
 
-    Parameters:
-        bot: "bot" object of Telegram API
-        update: "update" object of Telegram API
-        blob: Object containing ID and name of a blob (default: None)
+        Parameters:
+            bot: "bot" object of Telegram API
+            update: "update" object of Telegram API
+            blob: Object containing ID and name of a blob (default: None)
     """
-    global db  # noqa: F824
 
     if blob:
         blob_id, blob_name = blob['id'], blob['name']
-        if db is None:
-            return
 
         query = "SELECT * FROM\
             (SELECT web_url FROM gitlab WHERE id = (\
@@ -305,17 +264,15 @@ def download_blob_file_async(update: Update, context: CallbackContext, blob=None
             (SELECT parent_id FROM gitlab WHERE id = '{0}')"
 
         db_result = db.execute(query.format(blob_id)).fetchone()
-        download_blob_file_async_internal(
-            update, context, blob_id, blob_name, db_result
-        )
+        download_blob_file_async_internal(update, context, blob_id, blob_name, db_result)
 
 
 def format_keyboard_buttons(buttons=[]):
     """
-    Place the buttons on multiple lines if possible
+        Place the buttons on multiple lines if possible
 
-    Parameters:
-        buttons: Array containing the buttons to display (default: [])
+        Parameters:
+            buttons: Array containing the buttons to display (default: [])
     """
 
     keyboard = [[]]
@@ -337,18 +294,16 @@ def format_keyboard_buttons(buttons=[]):
     return keyboard
 
 
-def send_message(
-    update: Update, context: CallbackContext, message, buttons=[[]], blob=None
-):
+def send_message(update: Update, context: CallbackContext, message, buttons=[[]], blob=None):
     """
-    Send a reply message with text and button or upload a document
+        Send a reply message with text and button or upload a document
 
-    Parameters:
-        bot: "bot" object of Telegram API
-        update: "update" object of Telegram API
-        message: Message text
-        buttons: Array of answer buttons (default: [[]])
-        blob: Object that specifies the blob file to download (default: None)
+        Parameters:
+            bot: "bot" object of Telegram API
+            update: "update" object of Telegram API
+            message: Message text
+            buttons: Array of answer buttons (default: [[]])
+            blob: Object that specifies the blob file to download (default: None)
     """
 
     chat_id = get_chat_id(update)
@@ -360,45 +315,16 @@ def send_message(
             buttons = format_keyboard_buttons(buttons)
             reply_markup = InlineKeyboardMarkup(buttons)
 
-            context.bot.sendMessage(
-                chat_id=chat_id, text=message, reply_markup=reply_markup
-            )
-
-
-def _handle_subgroup_action(context, origin_id, buttons):
-    """Populate buttons with subgroups and projects for a given origin_id."""
-    subgroups = get_subgroups(context, origin_id)
-    if subgroups:
-        for subgroup in subgroups:
-            db.execute(
-                "INSERT OR REPLACE INTO gitlab (id, parent_id, name, type) VALUES (?, ?, ?, ?)",
-                (subgroup.id, subgroup.parent_id, subgroup.name, 'subgroup'),
-            )
-            buttons.append(
-                InlineKeyboardButton(
-                    f"🗂 {subgroup.name}", callback_data=f'git_s_{subgroup.id}'
-                )
-            )
-
-    for project in get_projects(origin_id):
-        db.execute(
-            "INSERT OR REPLACE INTO gitlab (id, parent_id, name, web_url, type) VALUES (?, ?, ?, ?, ?)",
-            (project.id, origin_id, project.name, project.web_url, 'project'),
-        )
-        buttons.append(
-            InlineKeyboardButton(
-                f"🗂 {project.name}", callback_data=f'git_p_{project.id}'
-            )
-        )
+            context.bot.sendMessage(chat_id=chat_id, text=message, reply_markup=reply_markup)
 
 
 def gitlab_handler(update: Update, context: CallbackContext):
     """
-    Handle every action of /git and /gitlab command
+        Handle every action of /git and /gitlab command
 
-    Parameters:
-        bot: "bot" object of Telegram API
-        update: "update" object of Telegram API
+        Parameters:
+            bot: "bot" object of Telegram API
+            update: "update" object of Telegram API
     """
 
     global db
@@ -419,16 +345,12 @@ def gitlab_handler(update: Update, context: CallbackContext):
         data = query.data.replace("git_", "")
 
     if not data:
-        for subgroup in get_subgroups(context, GITLAB_ROOT_GROUP):
-            db.execute(
-                "INSERT OR REPLACE INTO gitlab (id, parent_id, name, type) VALUES (?, ?, ?, ?)",
-                (subgroup.id, subgroup.parent_id, subgroup.name, 'subgroup'),
-            )
-            buttons.append(
-                InlineKeyboardButton(
-                    f"🗂 {subgroup.name}", callback_data=f'git_s_{subgroup.id}'
-                )
-            )
+        subgroups = get_subgroups(context, GITLAB_ROOT_GROUP)
+
+        for subgroup in subgroups:
+            db.execute("INSERT OR REPLACE INTO gitlab (id, parent_id, name, type) VALUES (?, ?, ?, ?)",
+                       (subgroup.id, subgroup.parent_id, subgroup.name, 'subgroup'))
+            buttons.append(InlineKeyboardButton(f"🗂 {subgroup.name}", callback_data=f'git_s_{subgroup.id}'))
     else:
         action, origin_id, blob_id = (data.split('_') + [None] * 3)[:3]
 
@@ -439,43 +361,42 @@ def gitlab_handler(update: Update, context: CallbackContext):
 
             db_result = db.execute(query % (origin_id, blob_id)).fetchone()
         else:
-            db_result = db.execute(
-                f"SELECT parent_id, name FROM gitlab WHERE id = {origin_id}"
-            ).fetchone()
+            db_result = db.execute(f"SELECT parent_id, name FROM gitlab WHERE id = {origin_id}").fetchone()
 
         if db_result:
             parent = db_result
 
         if action == 'x':
-            _type = db.execute(
-                f'SELECT type FROM gitlab WHERE id = {origin_id}'
-            ).fetchone()
+            _type = db.execute(f'SELECT type FROM gitlab WHERE id = {origin_id}').fetchone()
             action = (_type[0] if _type else 'subgroup')[0]
 
         if action == 's':
-            _handle_subgroup_action(context, origin_id, buttons)
+            subgroups = get_subgroups(context, origin_id)
+
+            if subgroups:
+                for subgroup in subgroups:
+                    db.execute("INSERT OR REPLACE INTO gitlab (id, parent_id, name, type) VALUES (?, ?, ?, ?)",
+                               (subgroup.id, subgroup.parent_id, subgroup.name, 'subgroup'))
+                    buttons.append(InlineKeyboardButton(f"🗂 {subgroup.name}", callback_data=f'git_s_{subgroup.id}'))
+
+            projects = get_projects(origin_id)
+
+            for project in projects:
+                db.execute("INSERT OR REPLACE INTO gitlab (id, parent_id, name, web_url, type) VALUES (?, ?, ?, ?, ?)",
+                           (project.id, origin_id, project.name, project.web_url, 'project'))
+                buttons.append(InlineKeyboardButton(f"🗂 {project.name}", callback_data=f'git_p_{project.id}'))
         elif action == 'p':
             buttons.extend(explore_repository_tree(origin_id, '/', db))
         elif action == 't':
-            path = db.execute(
-                f"SELECT pathname FROM gitlab WHERE id = '{blob_id}'"
-            ).fetchone()
+            path = db.execute(f"SELECT pathname FROM gitlab WHERE id = '{blob_id}'").fetchone()
             buttons.extend(explore_repository_tree(origin_id, path, db))
         elif action == 'b':
-            if len(parent) >= 3:
-                blob = {'id': blob_id, 'name': parent[2]}
+            blob = {'id': blob_id, 'name': parent[2]}
 
         if origin_id != str(GITLAB_ROOT_GROUP):
-            if len(parent) >= 1:
-                buttons.append(
-                    [InlineKeyboardButton("🔙", callback_data=f'git_x_{parent[0]}')]
-                )
+            buttons.append([InlineKeyboardButton("🔙", callback_data=f'git_x_{parent[0]}')])
 
-    title = ""
-    if blob_id and len(parent) >= 3:
-        title = parent[2]
-    elif len(parent) >= 2:
-        title = parent[1]
+    title = parent[2] if blob_id and len(parent) == 3 else parent[1]
     send_message(update, context, title, buttons, blob)
 
     db.commit()
