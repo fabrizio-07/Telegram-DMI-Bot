@@ -1,7 +1,7 @@
 import pytest
 import yaml
-
 from module.data import DbManager
+
 
 TABLE_NAME = "test_table"
 

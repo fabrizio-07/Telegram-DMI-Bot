@@ -2,10 +2,8 @@
 """Lesson class"""
 import logging
 from typing import List
-
 import bs4
 import requests
-
 from module.data.db_manager import DbManager
 from module.data.scrapable import Scrapable
 

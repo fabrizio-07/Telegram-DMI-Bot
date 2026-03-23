@@ -1,6 +1,5 @@
 from module.data.professor import Professor
 
-
 def test_professor_table() -> None:
     professor = Professor()
     assert professor.table == "professors"

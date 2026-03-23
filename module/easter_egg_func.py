@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 """Nobody knows what those functions do"""
 import sqlite3
-
 from telegram import Update
 from telegram.ext import CallbackContext
-
 from module.data import EasterEgg
 from module.shared import check_log, config_map
 

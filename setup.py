@@ -1,7 +1,6 @@
 """Used to set secret variables, like the token, when using the Dockerfile"""
-import argparse
 import sys
-
+import argparse
 import yaml
 
 

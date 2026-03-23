@@ -3,9 +3,8 @@ from typing import Optional
 
 from telegram import Update, User
 from telegram.ext import CallbackContext
-
-from module.data.vars import PLACE_HOLDER, TEXT_IDS
 from module.shared import check_log, config_map
+from module.data.vars import PLACE_HOLDER, TEXT_IDS
 from module.utils.multi_lang_utils import get_locale
 
 

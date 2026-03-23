@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS `exams_reg` (
   `studenti` VARCHAR(255),
   `insegnamento` VARCHAR(255),
   `docenti` VARCHAR(255),
-  'data' DATE,
+  'data' VARCHAR(255),
   PRIMARY KEY('studenti', 'insegnamento', 'docenti')
 );
 

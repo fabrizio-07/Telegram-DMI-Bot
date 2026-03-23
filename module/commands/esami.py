@@ -4,13 +4,11 @@ import logging
 import re
 from typing import Optional
 
-from telegram import (CallbackQuery, InlineKeyboardButton,
-                      InlineKeyboardMarkup, Update)
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, CallbackQuery
 from telegram.ext import CallbackContext
-
 from module.data import Exam
-from module.data.vars import PLACE_HOLDER, TEXT_IDS
 from module.shared import check_log, send_message
+from module.data.vars import TEXT_IDS, PLACE_HOLDER
 from module.utils.multi_lang_utils import get_locale, get_locale_code
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)

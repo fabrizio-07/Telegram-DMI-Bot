@@ -1,18 +1,15 @@
 """Aulario command"""
-import calendar
 import logging
+import calendar
 from datetime import date
 from io import BytesIO
 from typing import Optional
-
 from PIL import Image, ImageDraw, ImageFont
-from telegram import (CallbackQuery, InlineKeyboardButton,
-                      InlineKeyboardMarkup, Update)
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, CallbackQuery
 from telegram.ext import CallbackContext
-
 from module.data import TimetableSlot
-from module.data.vars import TEXT_IDS
 from module.shared import read_json
+from module.data.vars import TEXT_IDS
 from module.utils.multi_lang_utils import get_locale
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)

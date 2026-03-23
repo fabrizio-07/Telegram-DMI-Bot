@@ -1,2 +1,2 @@
 """Debug utilities"""
-from .log_manager import error_handler, log_error, log_message
+from .log_manager import log_error, log_message, error_handler

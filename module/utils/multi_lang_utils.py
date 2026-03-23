@@ -2,13 +2,10 @@ import os.path
 import random
 from glob import glob
 from os.path import basename
-
-import yaml
 from telegram import Update
-
-from module.data.vars import (ON_DEMAND_FILL, ON_DEMAND_TEXTS, PLACE_HOLDER,
-                              TEXT_IDS)
-from module.shared import CUSicon, read_md
+import yaml
+from module.shared import read_md, CUSicon
+from module.data.vars import TEXT_IDS, ON_DEMAND_TEXTS, PLACE_HOLDER, ON_DEMAND_FILL
 
 translations: dict[str, dict[str, str]] = {}
 
