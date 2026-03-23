@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('../..'))  # path to the actual project root 
 # -- Project information -----------------------------------------------------
 
 project = 'DMI bot'
-copyright = '2021, UNICT-DMI developers'  # pylint: disable=redefined-builtin
+copyright = '2021, UNICT-DMI developers'
 author = 'UNICT-DMI developers'
 
 # -- General configuration ---------------------------------------------------
@@ -39,7 +39,7 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns: list[str] = []
+exclude_patterns = []
 
 # -- Options for HTML output -------------------------------------------------
 

@@ -76,9 +76,7 @@ async def bot():
 
 
 @pytest.fixture(scope="session")
-async def client() -> (
-    TelegramClient
-):  # pylint: disable=redefined-outer-name,unused-argument
+async def client(bot) -> TelegramClient:
     """Called at the beginning of the testing session.
     Creates the telegram client that will simulate the user
 
