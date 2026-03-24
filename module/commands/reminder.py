@@ -11,6 +11,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext
 
 from module.data import Exam
+from module.data.db_manager import DbManager
 from module.data.reminder import ExamRegistration
 from module.data.vars import PLACE_HOLDER, TEXT_IDS
 from module.shared import check_log
@@ -77,7 +78,7 @@ def reminder(update: Update, context: CallbackContext) -> None:
     )
 
 
-# gestire quando l'utente seleziona lo stesso appello due volte
+# gestire quando l'utente seleziona lo stesso appello due volte!!!!!!!!
 def reminder_new_handler(update: Update, context: CallbackContext):
     '''Handler to create a new reminder'''
     query = update.callback_query
@@ -92,14 +93,77 @@ def reminder_new_handler(update: Update, context: CallbackContext):
     )
 
 
-def reminder_del_handler(update: Update, context: CallbackContext):
-    '''Handler to delete a reminder'''
+def reminder_del_button(update: Update, context: CallbackContext):
+    '''Creating keyaboard to lisk all reminders for a user'''
+
+    query = update.callback_query
     message_text = "Quale reminder desideri eliminare?"  # gestire con TEXT_IDS
 
+    reminder_list = ExamRegistration.find_by_student(query.message.chat_id)
+
+    context.user_data['reminder']['reminder_list'] = reminder_list
+
     keyboard: List[List[InlineKeyboardButton]] = [[]]
+    keyboard = []
+    for idx, item in enumerate(reminder_list):
+        button_text = f"{item.insegnamento} - {item.data}"
+        keyboard.append(
+            [InlineKeyboardButton(button_text, callback_data=f"rem_delete_{idx}")]
+        )
+
+    keyboard.append(
+        [InlineKeyboardButton("Cancella tutti", callback_data="rem_delete_-1")]
+    )  # gestire con TEXT_IDS
+
     context.bot.send_message(
-        chat_id=update.message.chat_id,
+        chat_id=query.message.chat_id,
         text=message_text,
+        reply_markup=InlineKeyboardMarkup(keyboard),
+    )
+
+
+def reminder_del_handler(update: Update, context: CallbackContext):
+    '''Handler to delete a reminder'''
+
+    query = update.callback_query
+
+    idx = int(query.data.replace("rem_delete_", ""))
+
+    message_text = ""
+
+    if idx != -1:
+        selected_exam = context.user_data['reminder']['reminder_list'][idx]
+
+        try:
+            DbManager.delete_from(
+                table_name="exams_reg",
+                where="studenti = ? AND insegnamento = ? AND docenti = ?",
+                where_args=(
+                    str(selected_exam.studenti),
+                    selected_exam.insegnamento,
+                    selected_exam.docenti,
+                ),
+            )
+            message_text = f"**Reminder per l'esame di {selected_exam.insegnamento} del {str(selected_exam.data)} eliminato!**\n"  # gestire con TEXT_IDS
+        except Exception as e:
+            logger.error(f"Errore eliminazione record: {e}")
+            message_text = "Errore durante la cancellazione dei dati."
+    elif idx == -1:
+        try:
+            DbManager.delete_from(
+                table_name="exams_reg",
+                where="studenti = ?",
+                where_args=(str(query.message.chat_id),),
+            )
+            message_text = "**Reminders eliminati!**\n"  # gestire con TEXT_IDS
+        except Exception as e:
+            logger.error(f"Errore eliminazione record: {e}")
+            message_text = "Errore durante la cancellazione dei dati."
+
+    context.bot.send_message(
+        chat_id=query.message.chat_id,
+        text=message_text,
+        parse_mode='Markdown',
     )
 
 
@@ -121,6 +185,11 @@ def reminder_input_insegnamento(update: Update, context: CallbackContext) -> Non
             if (subj, prof) not in seen:
                 unique_exams.append({'subj': subj, 'prof': prof})
                 seen.add((subj, prof))
+
+        if 'temp_exams_list' in context.user_data['reminder']:
+            context.user_data['reminder']['temp_exams_list'].clear()
+        else:  # crea il dict che conterrà i dati del comando /reminder all'interno della key ['reminder'] di user data
+            context.user_data['reminder']['temp_exams_list'] = {}
 
         context.user_data['reminder']['temp_exams_list'] = unique_exams
 
@@ -314,7 +383,7 @@ def reminder_confermato_handler(update: Update, context: CallbackContext):
         message_text = "**Esame Registrato!**\n"  # gestire con TEXT_IDS
     except Exception as e:
         logger.error(f"Errore salvataggio DB: {e}")
-        message_text = "Errore durante il salvataggio dei dati."  # gestire con TEXT_IDS
+        message_text = "Errore nel salvataggio. Non puoi registrare lo stesso reminder due volte."  # gestire con TEXT_IDS
 
     u_data.clear()
 

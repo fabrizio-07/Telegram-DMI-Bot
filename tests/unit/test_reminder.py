@@ -5,12 +5,9 @@ from unittest.mock import MagicMock, patch
 
 from telegram import InlineKeyboardButton
 
-from module.commands.reminder import (
-    reminder,
-    reminder_button_sessione,
-    reminder_input_insegnamento,
-    reminder_prof_handler,
-)
+from module.commands.reminder import (reminder, reminder_button_sessione,
+                                      reminder_input_insegnamento,
+                                      reminder_prof_handler)
 
 
 def test_reminder_success_private_chat():

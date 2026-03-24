@@ -6,7 +6,8 @@ from os.path import basename
 import yaml
 from telegram import Update
 
-from module.data.vars import ON_DEMAND_FILL, ON_DEMAND_TEXTS, PLACE_HOLDER, TEXT_IDS
+from module.data.vars import (ON_DEMAND_FILL, ON_DEMAND_TEXTS, PLACE_HOLDER,
+                              TEXT_IDS)
 from module.shared import CUSicon, read_md
 
 translations: dict[str, dict[str, str]] = {}
