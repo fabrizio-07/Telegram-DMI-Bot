@@ -57,17 +57,19 @@ def reminder(update: Update, context: CallbackContext) -> None:
             ),
         )
 
-    message_text = "Cosa desideri fare?"  # gestire con TEXT_IDS
+    message_text: str = get_locale(locale, TEXT_IDS.REMINDER_FIRST_SELECTION)
 
     keyboard: List[List[InlineKeyboardButton]] = [[]]
     keyboard = [
         [
             InlineKeyboardButton(
-                "Aggiungi reminder", callback_data="rem_add"
-            ),  # gestire con TEXT_IDS
+                get_locale(locale, TEXT_IDS.REMINDER_ADD),
+                callback_data="rem_add",
+            ),
             InlineKeyboardButton(
-                "Cancella reminder", callback_data="rem_del"
-            ),  # gestire con TEXT_IDS
+                get_locale(locale, TEXT_IDS.REMINDER_DELETE),
+                callback_data="rem_del",
+            ),
         ]
     ]
 
@@ -97,7 +99,8 @@ def reminder_del_button(update: Update, context: CallbackContext):
     '''Creating keyaboard to lisk all reminders for a user'''
 
     query = update.callback_query
-    message_text = "Quale reminder desideri eliminare?"  # gestire con TEXT_IDS
+    locale = update.callback_query.from_user.language_code
+    message_text: str = get_locale(locale, TEXT_IDS.REMINDER_DELETE_SELECTION)
 
     reminder_list = ExamRegistration.find_by_student(query.message.chat_id)
 
@@ -112,8 +115,13 @@ def reminder_del_button(update: Update, context: CallbackContext):
         )
 
     keyboard.append(
-        [InlineKeyboardButton("Cancella tutti", callback_data="rem_delete_-1")]
-    )  # gestire con TEXT_IDS
+        [
+            InlineKeyboardButton(
+                get_locale(locale, TEXT_IDS.REMINDER_DELETE_ALL),
+                callback_data="rem_delete_-1",
+            )
+        ]
+    )
 
     context.bot.send_message(
         chat_id=query.message.chat_id,
