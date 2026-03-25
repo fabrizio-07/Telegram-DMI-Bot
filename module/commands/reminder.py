@@ -134,6 +134,7 @@ def reminder_del_handler(update: Update, context: CallbackContext):
     '''Handler to delete a reminder'''
 
     query = update.callback_query
+    locale = update.callback_query.from_user.language_code
 
     idx = int(query.data.replace("rem_delete_", ""))
 
@@ -155,7 +156,7 @@ def reminder_del_handler(update: Update, context: CallbackContext):
             message_text = f"**Reminder per l'esame di {selected_exam.insegnamento} del {str(selected_exam.data)} eliminato!**\n"  # gestire con TEXT_IDS
         except Exception as e:
             logger.error(f"Errore eliminazione record: {e}")
-            message_text = "Errore durante la cancellazione dei dati."
+            message_text: str = get_locale(locale, TEXT_IDS.REPORT_WARNING_TEXT_ID)
     elif idx == -1:
         try:
             DbManager.delete_from(
@@ -163,10 +164,12 @@ def reminder_del_handler(update: Update, context: CallbackContext):
                 where="studenti = ?",
                 where_args=(str(query.message.chat_id),),
             )
-            message_text = "**Reminders eliminati!**\n"  # gestire con TEXT_IDS
+
+            message_text: str = get_locale(locale, TEXT_IDS.REMINDER_CONFIRM_DELETE_ALL)
+
         except Exception as e:
             logger.error(f"Errore eliminazione record: {e}")
-            message_text = "Errore durante la cancellazione dei dati."
+            message_text: str = get_locale(locale, TEXT_IDS.REPORT_WARNING_TEXT_ID)
 
     context.bot.send_message(
         chat_id=query.message.chat_id,
@@ -212,7 +215,7 @@ def reminder_input_insegnamento(update: Update, context: CallbackContext) -> Non
 
         context.bot.send_message(
             chat_id=update.message.chat_id,
-            text="Seleziona l'esame corretto:",
+            text=get_locale(locale, TEXT_IDS.REMINDER_SELECT_EXAM_PROFESSOR),
             reply_markup=InlineKeyboardMarkup(keyboard),
         )
     else:
@@ -320,6 +323,7 @@ def reminder_appello_handler(update: Update, context: CallbackContext) -> None:
     query.answer()
     chat_id = query.message.chat_id
     message_id = query.message.message_id
+    locale = update.callback_query.from_user.language_code
 
     if not context.user_data or 'reminder' not in context.user_data:
         return
@@ -344,11 +348,11 @@ def reminder_appello_handler(update: Update, context: CallbackContext) -> None:
     keyboard = [
         [
             InlineKeyboardButton(
-                "Conferma", callback_data="rem_conf_yes"
-            ),  # gestire con TEXT_IDS
+                get_locale(locale, TEXT_IDS.CONFIRM), callback_data="rem_conf_yes"
+            ),
             InlineKeyboardButton(
-                "Annulla", callback_data="rem_conf_no"
-            ),  # gestire con TEXT_IDS
+                get_locale(locale, TEXT_IDS.UNDO), callback_data="rem_conf_no"
+            ),
         ]
     ]
 
@@ -366,19 +370,17 @@ def reminder_confermato_handler(update: Update, context: CallbackContext):
     query.answer()
     chat_id = query.message.chat_id
     message_id = query.message.message_id
+    locale = update.callback_query.from_user.language_code
 
-    # Usiamo .get() per evitare KeyError se lo stash è vuoto
     u_data = context.user_data.get('reminder', {})
     raw_date = u_data.get('appello', 'Data selezionata')
 
-    # 1. Gestione sicura del parsing della data
     try:
         data_obj = datetime.strptime(raw_date, '%Y-%m-%d').date()
     except (ValueError, TypeError):
         # Fallback se non è nel formato atteso
         data_obj = raw_date
 
-    # 2. Creazione oggetto
     nuovo_reminder = ExamRegistration(
         studenti=str(chat_id),
         insegnamento=u_data.get('insegnamento', 'N/D'),
@@ -388,10 +390,12 @@ def reminder_confermato_handler(update: Update, context: CallbackContext):
 
     try:
         nuovo_reminder.save()
-        message_text = "**Esame Registrato!**\n"  # gestire con TEXT_IDS
+        message_text: str = get_locale(locale, TEXT_IDS.REMINDER_CONFIRM_REGISTRATION)
     except Exception as e:
         logger.error(f"Errore salvataggio DB: {e}")
-        message_text = "Errore nel salvataggio. Non puoi registrare lo stesso reminder due volte."  # gestire con TEXT_IDS
+        message_text: str = get_locale(
+            locale, TEXT_IDS.REMINDER_DUPLICATE_WARNING
+        )  # non basta farlo, l'utente puó comunque selezionare lo stesso appello due volte
 
     u_data.clear()
 
@@ -409,10 +413,11 @@ def reminder_annullato_handler(update: Update, context: CallbackContext):
     query.answer()
     chat_id = query.message.chat_id
     message_id = query.message.message_id
+    locale = update.callback_query.from_user.language_code
 
     del context.user_data['reminder']
 
-    message_text = "Operazione annullata"  # cambiare con messaggi TEXT_IDS
+    message_text: str = get_locale(locale, TEXT_IDS.UNDO_OPERATION)
 
     context.bot.editMessageText(
         text=message_text, chat_id=chat_id, message_id=message_id
