@@ -337,15 +337,20 @@ EXAMS_USAGE_TEXT_ID: |-
   
 # /reminder command
 REMINDER_SELECT_EXAM_DATE_TEXT_ID: "Seleziona la data dell'appello che ti interessa:"
-REMINDER_FOUND_SUBJECT_TEXT_ID: "Ho trovato la materia %capibara%. Seleziona il professore:"
 REMINDER_NOT_FOUND_SUBJECT_TEXT_ID: "Non ho trovato nessuna materia corrispondente a %capybara% nel database."
 REMINDER_ADD: "Aggiungi reminder"
 REMINDER_DELETE: "Cancella reminder"
 REMINDER_DELETE_SELECTION: "Quale reminder desideri eliminare?"
 REMINDER_FIRST_SELECTION: "Cosa desideri fare?"
 REMINDER_DELETE_ALL: "Cancella tutti"
-REMINDER_CONFIRM_DELETE: "Reminder per l'esame di %capibara% del %capibara% eliminato!"
+REMINDER_CONFIRM_DELETE: "Reminder per l'esame di %capybara% del %capybara% eliminato!"
 REMINDER_CONFIRM_REGISTRATION: "Reminder registrato!"
 REMINDER_CONFIRM_DELETE_ALL: "Reminders cancellati!"
 REMINDER_SELECT_EXAM_PROFESSOR: "Seleziona il docente corretto."
 REMINDER_DUPLICATE_WARNING: "Errore nella registrazione. Non puoi registrare lo stesso reminder due volte."
+REMINDER_RECAP: |-
+  Riepilogo del reminder
+  Materia: %capybara%
+  Professore: %capybara%
+  Data: %capybara%
+  Vuoi confermare?

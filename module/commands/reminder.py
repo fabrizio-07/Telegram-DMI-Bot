@@ -153,7 +153,15 @@ def reminder_del_handler(update: Update, context: CallbackContext):
                     selected_exam.docenti,
                 ),
             )
-            message_text = f"**Reminder per l'esame di {selected_exam.insegnamento} del {str(selected_exam.data)} eliminato!**\n"  # gestire con TEXT_IDS
+
+            message_text: str = get_locale(
+                locale, TEXT_IDS.REMINDER_CONFIRM_DELETE
+            ).replace(PLACE_HOLDER, selected_exam.insegnamento, 1)
+
+            message_text: str = message_text.replace(
+                PLACE_HOLDER, selected_exam.data, 1
+            )
+
         except Exception as e:
             logger.error(f"Errore eliminazione record: {e}")
             message_text: str = get_locale(locale, TEXT_IDS.REPORT_WARNING_TEXT_ID)
@@ -336,13 +344,12 @@ def reminder_appello_handler(update: Update, context: CallbackContext) -> None:
     prof = data.get('professore', 'N/D')
     data_scelta = data.get('appello', 'Data selezionata')
 
-    message_text = (
-        f"Riepilogo Promemoria\n\n"
-        f"Materia: {esame}\n"
-        f"Professore: {prof}\n"
-        f"Data: {data_scelta}\n\n"
-        f"Confermi la selezione?"
-    )  # gestire con TEXT_IDS
+    message_text: str = get_locale(locale, TEXT_IDS.REMINDER_RECAP).replace(
+        PLACE_HOLDER, esame, 1
+    )
+
+    message_text: str = message_text.replace(PLACE_HOLDER, prof, 1)
+    message_text: str = message_text.replace(PLACE_HOLDER, data_scelta, 1)
 
     keyboard: List[List[InlineKeyboardButton]] = [[]]
     keyboard = [

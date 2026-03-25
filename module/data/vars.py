@@ -134,7 +134,6 @@ class TEXT_IDS(Enum):
     EXAMS_USAGE_TEXT_ID = auto()
     # /reminder
     REMINDER_SELECT_EXAM_DATE_TEXT_ID = auto()
-    REMINDER_FOUND_SUBJECT_TEXT_ID = auto()
     REMINDER_NOT_FOUND_SUBJECT_TEXT_ID = auto()
     REMINDER_ADD = auto()
     REMINDER_DELETE = auto()
@@ -146,6 +145,7 @@ class TEXT_IDS(Enum):
     REMINDER_SELECT_EXAM_PROFESSOR = auto()
     REMINDER_CONFIRM_REGISTRATION = auto()
     REMINDER_DUPLICATE_WARNING = auto()
+    REMINDER_RECAP = auto()
 
 
 # Placeholder special string to be used in replace()

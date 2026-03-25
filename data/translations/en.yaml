@@ -335,15 +335,20 @@ EXAMS_USAGE_TEXT_ID: |-
   
 # /reminder command
 REMINDER_SELECT_EXAM_DATE_TEXT_ID: "Select the exam date you are interested in:"
-REMINDER_FOUND_SUBJECT_TEXT_ID: "Found subject '%capybara%'. Please select the professor:"
 REMINDER_NOT_FOUND_SUBJECT_TEXT_ID: "No subject matching '%capybara%' was found."
 REMINDER_ADD: "Add reminder"
 REMINDER_DELETE: "Delete reminder"
 REMINDER_DELETE_SELECTION: "What reminder would you like to delete?"
 REMINDER_FIRST_SELECTION: "What would you like to do?"
 REMINDER_DELETE_ALL: "Delete all"
-REMINDER_CONFIRM_DELETE: "Reminder of the %capibara% exam of the %capibara% deleted!"
+REMINDER_CONFIRM_DELETE: "Reminder of the %capybara% exam of the %capybara% deleted!"
 REMINDER_CONFIRM_DELETE_ALL: "Reminders deleted!"
 REMINDER_SELECT_EXAM_PROFESSOR: "Select the right professor."
 REMINDER_CONFIRM_REGISTRATION: "Reminder registered!"
 REMINDER_DUPLICATE_WARNING: "An error has occurred in registration. You cannot register the same reminder twice."
+REMINDER_RECAP: |-
+  Recap of the reminder:
+  Subject: %capybara%
+  Professor: %capybara%
+  Date: %capybara%
+  Do you want to confirm?
