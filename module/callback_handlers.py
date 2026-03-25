@@ -1,5 +1,6 @@
 """Common query callback families"""
 
+import logging  # pylint: disable=unused-import
 from typing import Optional
 
 from telegram import CallbackQuery, ParseMode, Update
@@ -8,19 +9,12 @@ from telegram.ext import CallbackContext
 from module.commands.aulario import *  # pylint: disable=wildcard-import,unused-wildcard-import
 from module.commands.drive_contribute import *  # pylint: disable=wildcard-import,unused-wildcard-import
 from module.commands.esami import (  # pylint: disable=unused-import
-    esami_button_anno,
-    esami_button_insegnamento,
-    esami_button_sessione,
-)
+    esami_button_anno, esami_button_insegnamento, esami_button_sessione)
 from module.commands.help import *  # pylint: disable=wildcard-import,unused-wildcard-import
 from module.commands.lezioni import (  # pylint: disable=unused-import
-    lezioni_button_anno,
-    lezioni_button_giorno,
-    lezioni_button_insegnamento,
-)
+    lezioni_button_anno, lezioni_button_giorno, lezioni_button_insegnamento)
 from module.data.vars import ON_DEMAND_TEXTS
 from module.shared import check_log, read_md
-
 # Needed to correctly run functions using globals()
 from module.utils.multi_lang_utils import get_on_demand_text
 
@@ -55,8 +49,6 @@ def localization_handler(update: Update, context: CallbackContext) -> None:
     """
     locale: str = update.callback_query.from_user.language_code
     query: Optional[CallbackQuery] = update.callback_query
-    if not query or not query.data:
-        return
     data: str = query.data.replace("localization_", "")
     message_text: str = get_on_demand_text(locale, data)
     check_log(update, data, is_query=True)
