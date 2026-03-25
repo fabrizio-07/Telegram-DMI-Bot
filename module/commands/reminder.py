@@ -154,12 +154,10 @@ def reminder_del_handler(update: Update, context: CallbackContext):
                 ),
             )
 
-            message_text: str = get_locale(
-                locale, TEXT_IDS.REMINDER_CONFIRM_DELETE
-            ).replace(PLACE_HOLDER, selected_exam.insegnamento, 1)
-
-            message_text: str = message_text.replace(
-                PLACE_HOLDER, selected_exam.data, 1
+            message_text: str = (
+                get_locale(locale, TEXT_IDS.REMINDER_CONFIRM_DELETE)
+                .replace(PLACE_HOLDER, selected_exam.insegnamento, 1)
+                .replace(PLACE_HOLDER, selected_exam.data, 1)
             )
 
         except Exception as e:
@@ -344,12 +342,12 @@ def reminder_appello_handler(update: Update, context: CallbackContext) -> None:
     prof = data.get('professore', 'N/D')
     data_scelta = data.get('appello', 'Data selezionata')
 
-    message_text: str = get_locale(locale, TEXT_IDS.REMINDER_RECAP).replace(
-        PLACE_HOLDER, esame, 1
+    message_text: str = (
+        get_locale(locale, TEXT_IDS.REMINDER_RECAP)
+        .replace(PLACE_HOLDER, esame, 1)
+        .replace(PLACE_HOLDER, prof, 1)
+        .replace(PLACE_HOLDER, data_scelta, 1)
     )
-
-    message_text: str = message_text.replace(PLACE_HOLDER, prof, 1)
-    message_text: str = message_text.replace(PLACE_HOLDER, data_scelta, 1)
 
     keyboard: List[List[InlineKeyboardButton]] = [[]]
     keyboard = [
