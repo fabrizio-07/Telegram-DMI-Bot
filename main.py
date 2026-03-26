@@ -3,47 +3,71 @@
 
 import uvicorn
 from telegram import BotCommand
-from telegram.ext import (CallbackQueryHandler, CommandHandler, Dispatcher,
-                          Filters, MessageHandler, Updater)
+from telegram.ext import (
+    CallbackQueryHandler,
+    CommandHandler,
+    Dispatcher,
+    Filters,
+    MessageHandler,
+    Updater,
+)
 
-from module.callback_handlers import (exit_handler, informative_callback,
-                                      localization_handler, md_handler,
-                                      none_handler, submenu_handler)
-from module.commands.aulario import (aulario, calendar_handler, month_handler,
-                                     subjects_arrow_handler, subjects_handler)
+from module.callback_handlers import (
+    exit_handler,
+    informative_callback,
+    localization_handler,
+    md_handler,
+    none_handler,
+    submenu_handler,
+)
+from module.commands.aulario import (
+    aulario,
+    calendar_handler,
+    month_handler,
+    subjects_arrow_handler,
+    subjects_handler,
+)
 from module.commands.drive_contribute import drive_contribute
-from module.commands.esami import (esami, esami_handler,
-                                   esami_input_insegnamento)
+from module.commands.esami import esami, esami_handler, esami_input_insegnamento
 from module.commands.gdrive import drive, drive_handler
 from module.commands.help import help_cmd
-from module.commands.lezioni import (lezioni, lezioni_handler,
-                                     lezioni_input_insegnamento)
+from module.commands.lezioni import lezioni, lezioni_handler, lezioni_input_insegnamento
 from module.commands.professori import prof
 from module.commands.regolamento_didattico import (
-    cdl_handler, regolamentodidattico, regolamentodidattico_handler,
-    send_regolamento)
-from module.commands.reminder import (reminder, reminder_annullato_handler,
-                                      reminder_appello_handler,
-                                      reminder_confermato_handler,
-                                      reminder_del_button,
-                                      reminder_del_handler,
-                                      reminder_input_insegnamento,
-                                      reminder_new_handler,
-                                      reminder_prof_handler,
-                                      reminder_sessione_handler)
+    cdl_handler,
+    regolamentodidattico,
+    regolamentodidattico_handler,
+    send_regolamento,
+)
+from module.commands.reminder import (
+    reminder,
+    reminder_annullato_handler,
+    reminder_appello_handler,
+    reminder_confermato_handler,
+    reminder_del_button,
+    reminder_del_handler,
+    reminder_input_insegnamento,
+    reminder_new_handler,
+    reminder_prof_handler,
+    reminder_sessione_handler,
+)
 from module.commands.report import report
 from module.commands.start import start
 from module.commands.stats import stats, stats_tot
 from module.data.vars import TEXT_IDS
 from module.debug import error_handler, log_message
-from module.easter_egg_func import (bladrim, lei_che_ne_pensa_signorina,
-                                    prof_sticker, santino, smonta_portoni,
-                                    uni_bandita)
+from module.easter_egg_func import (
+    bladrim,
+    lei_che_ne_pensa_signorina,
+    prof_sticker,
+    santino,
+    smonta_portoni,
+    uni_bandita,
+)
 from module.gitlab import git, gitlab_handler
-from module.job_updater import updater_lep
+from module.job_updater import updater_lep, check_exam_reminders
 from module.shared import config_map
-from module.utils.multi_lang_utils import (get_regex_multi_lang,
-                                           load_translations)
+from module.utils.multi_lang_utils import get_regex_multi_lang, load_translations
 from webapp.app import app
 
 
@@ -282,6 +306,10 @@ def add_jobs(dp: Dispatcher) -> None:
     dp.job_queue.run_repeating(
         updater_lep, interval=86400, first=1
     )  # job_updater_lep (24h)
+
+    dp.job_queue.run_repeating(
+        check_exam_reminders, interval=86400, first=100
+    )  # ogni 24h ma first=100 per evitare overlapping con le DB queries di updater_lep
 
 
 def main() -> None:
