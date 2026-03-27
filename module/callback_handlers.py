@@ -9,19 +9,12 @@ from telegram.ext import CallbackContext
 from module.commands.aulario import *  # pylint: disable=wildcard-import,unused-wildcard-import
 from module.commands.drive_contribute import *  # pylint: disable=wildcard-import,unused-wildcard-import
 from module.commands.esami import (  # pylint: disable=unused-import
-    esami_button_anno,
-    esami_button_insegnamento,
-    esami_button_sessione,
-)
+    esami_button_anno, esami_button_insegnamento, esami_button_sessione)
 from module.commands.help import *  # pylint: disable=wildcard-import,unused-wildcard-import
 from module.commands.lezioni import (  # pylint: disable=unused-import
-    lezioni_button_anno,
-    lezioni_button_giorno,
-    lezioni_button_insegnamento,
-)
+    lezioni_button_anno, lezioni_button_giorno, lezioni_button_insegnamento)
 from module.data.vars import ON_DEMAND_TEXTS
 from module.shared import check_log, read_md
-
 # Needed to correctly run functions using globals()
 from module.utils.multi_lang_utils import get_on_demand_text
 

@@ -1,9 +1,43 @@
 """Job updater"""
 
+from datetime import datetime, timedelta
+import logging
+
 from telegram.ext import CallbackContext
 
+from module.commands.reminder import reminder_send_message
 from module.data import Exam, Lesson, Professor, TimetableSlot
+from module.data.db_manager import DbManager
 from module.shared import check_print_old_exams, get_year_code
+
+logger = logging.getLogger(__name__)
+
+
+def check_exam_reminders(context: CallbackContext) -> None:
+    """Job function to check for exams 14 days and 4 days from now and send reminder."""
+
+    now = datetime.now()
+
+    first_target_date = (now + timedelta(days=14)).strftime('%Y-%m-%d')
+    second_target_date = (now + timedelta(days=4)).strftime('%Y-%m-%d')
+
+    try:
+        # select al db che prende solo gli esami tra 4 o 14 giorni
+        reminders = DbManager.select_from(
+            table_name="exams_reg",
+            where="data IN (?, ?)",
+            where_args=(first_target_date, second_target_date),
+        )
+
+        if reminders:
+            reminder_send_message(
+                reminders, context, first_target_date, second_target_date
+            )
+
+    except Exception as db_err:
+        logger.error(
+            f"Database error nel controllo all'interno della funzione check_exam_reminders: {db_err}"
+        )
 
 
 def updater_lep(_: CallbackContext):

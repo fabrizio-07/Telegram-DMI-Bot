@@ -10,7 +10,8 @@ from typing import Optional, Tuple
 
 import requests
 from bs4 import BeautifulSoup
-from telegram import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram import (CallbackQuery, InlineKeyboardButton,
+                      InlineKeyboardMarkup, Update)
 from telegram.ext import CallbackContext
 
 from module.data import Lesson
