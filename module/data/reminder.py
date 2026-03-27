@@ -26,11 +26,13 @@ class ExamRegistration(Scrapable):
         insegnamento: str = "",
         docenti: str = "",
         data: str = "",
+        lingua: str = "",
     ):
         self.studenti = studenti
         self.insegnamento = insegnamento
         self.docenti = docenti
         self.data = data
+        self.lingua = lingua
 
     @property
     def table(self) -> str:
@@ -40,7 +42,7 @@ class ExamRegistration(Scrapable):
     @property
     def columns(self) -> tuple:
         """tuple of column names of the database table that will store this Reminder"""
-        return ("studenti", "insegnamento", "docenti", "data")
+        return ("studenti", "insegnamento", "docenti", "data", "lingua")
 
     @classmethod
     def find_by_student(cls, studente_id: str) -> List['ExamRegistration']:
@@ -67,4 +69,5 @@ class ExamRegistration(Scrapable):
             f"Materia: {self.insegnamento}\n"
             f"Docente: {self.docenti}\n"
             f"Data: {self.data}\n"
+            f"Lingua: {self.lingua}\n"
         )
