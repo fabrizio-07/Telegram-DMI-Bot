@@ -80,6 +80,47 @@ def reminder(update: Update, context: CallbackContext) -> None:
     )
 
 
+def reminder_send_message(
+    reminders: list,
+    context: CallbackContext,
+    first_target_date: str,
+    second_target_date: str,
+) -> None:
+
+    locale = 'it'  # capire come prendere il language_code senza update
+
+    for rem in reminders:
+        student_id = rem.get('studenti')
+        subject = rem.get('insegnamento', 'N/D')
+        prof = rem.get('docenti', 'N/D')
+        exam_date = rem.get('data')
+
+        # sceglie se mandare il primo o il secondo reminder in base a se mancano 14 o 4 giorni dall'esame
+        if exam_date == first_target_date:
+            message_text: str = (
+                get_locale(locale, TEXT_IDS.REMINDER_FIRST_MESSAGE)
+                .replace(PLACE_HOLDER, subject, 1)
+                .replace(PLACE_HOLDER, prof, 1)
+                .replace(PLACE_HOLDER, exam_date, 1)
+            )
+        elif exam_date == second_target_date:
+            message_text: str = (
+                get_locale(locale, TEXT_IDS.REMINDER_SECOND_MESSAGE)
+                .replace(PLACE_HOLDER, subject, 1)
+                .replace(PLACE_HOLDER, prof, 1)
+                .replace(PLACE_HOLDER, exam_date, 1)
+            )
+        else:
+            continue  # safety check
+
+        try:
+            context.bot.send_message(
+                chat_id=student_id, text=message_text, parse_mode='Markdown'
+            )
+        except Exception as msg_err:
+            logger.error(f"Errore nell'invio del messaggio a {student_id}: {msg_err}")
+
+
 # gestire quando l'utente seleziona lo stesso appello due volte!!!!!!!!
 def reminder_new_handler(update: Update, context: CallbackContext):
     '''Handler to create a new reminder'''

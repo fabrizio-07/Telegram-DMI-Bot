@@ -146,6 +146,8 @@ class TEXT_IDS(Enum):
     REMINDER_CONFIRM_REGISTRATION = auto()
     REMINDER_DUPLICATE_WARNING = auto()
     REMINDER_RECAP = auto()
+    REMINDER_FIRST_MESSAGE = auto()
+    REMINDER_SECOND_MESSAGE = auto()
 
 
 # Placeholder special string to be used in replace()

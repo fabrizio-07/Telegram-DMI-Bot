@@ -5,49 +5,34 @@ import logging
 
 from telegram.ext import CallbackContext
 
+from module.commands.reminder import reminder_send_message
 from module.data import Exam, Lesson, Professor, TimetableSlot
-from module.shared import check_print_old_exams, get_year_code
-
 from module.data.db_manager import DbManager
-
-from module.data.vars import PLACE_HOLDER, TEXT_IDS
-from module.utils.multi_lang_utils import get_locale
+from module.shared import check_print_old_exams, get_year_code
 
 logger = logging.getLogger(__name__)
 
 
 def check_exam_reminders(context: CallbackContext) -> None:
-    """Job function to check for exams 15 days from now and send reminder."""
+    """Job function to check for exams 14 days and 4 days from now and send reminder."""
 
-    target_date = (datetime.now() + timedelta(days=15)).strftime('%Y-%m-%d')
+    now = datetime.now()
+
+    first_target_date = (now + timedelta(days=14)).strftime('%Y-%m-%d')
+    second_target_date = (now + timedelta(days=4)).strftime('%Y-%m-%d')
 
     try:
+        # select al db che prende solo gli esami tra 4 o 14 giorni
         reminders = DbManager.select_from(
             table_name="exams_reg",
-            where="data = ?",
-            where_args=(target_date,),
+            where="data IN (?, ?)",
+            where_args=(first_target_date, second_target_date),
         )
 
-        for rem in reminders:
-            student_id = rem.get('studenti')
-            subject = rem.get('insegnamento', 'N/D')
-            prof = rem.get('docenti', 'N/D')
-            exam_date = rem.get('data', target_date)
-
-            message_text = (
-                f"Reminder Esame\n"
-                f"La prenotazione per l'esame di {subject} con il prof. {prof} "
-                f"previsto per il *{exam_date}* é aperta.\n"
+        if reminders:
+            reminder_send_message(
+                reminders, context, first_target_date, second_target_date
             )
-
-            try:
-                context.bot.send_message(
-                    chat_id=student_id, text=message_text, parse_mode='Markdown'
-                )
-            except Exception as msg_err:
-                logger.error(
-                    f"Errore nell'invio del messaggio a {student_id}: {msg_err}"
-                )
 
     except Exception as db_err:
         logger.error(
