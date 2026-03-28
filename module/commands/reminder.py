@@ -117,6 +117,16 @@ def reminder_send_message(
             context.bot.send_message(
                 chat_id=student_id, text=message_text, parse_mode='Markdown'
             )
+            if exam_date == second_target_date:
+                DbManager.delete_from(
+                    table_name="exams_reg",
+                    where="studenti = ? AND insegnamento = ? AND docenti = ?",
+                    where_args=(
+                        str(student_id),
+                        subject,
+                        prof,
+                    ),
+                )
         except Exception as msg_err:
             logger.error(f"Errore nell'invio del messaggio a {student_id}: {msg_err}")
 
