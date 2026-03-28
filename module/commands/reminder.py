@@ -455,7 +455,7 @@ def reminder_confermato_handler(update: Update, context: CallbackContext):
     )
 
     if not results:
-        if (data_obj - date.today()).days < 3:
+        if (data_obj - date.today()).days < 4:
             message_text: str = get_locale(locale, TEXT_IDS.REMINDER_TOO_LATE)
         else:
             try:

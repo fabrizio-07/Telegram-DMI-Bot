@@ -8,6 +8,7 @@ import pytest
 from telegram import InlineKeyboardButton
 
 from module.commands.reminder import (
+    TEXT_IDS,
     reminder,
     reminder_annullato_handler,
     reminder_appello_handler,
@@ -22,7 +23,6 @@ from module.commands.reminder import (
     reminder_send_message,
     reminder_sessione_handler,
 )
-
 from module.job_updater import check_exam_reminders
 
 
@@ -416,6 +416,42 @@ def test_reminder_button_appello_parses_dates(mock_exam_find):
         )
 
 
+@patch("module.commands.reminder.Exam.find")
+@patch("module.commands.reminder.get_locale")
+# Rimosso il patch di TEXT_IDS
+def test_reminder_button_appello_no_dates(mock_get_locale, mock_exam_find):
+    '''Testa reminder_button_appello() nel caso in cui non ci sono appelli disponibili'''
+
+    mock_update = MagicMock()
+    mock_update.callback_query.from_user.language_code = "it"
+
+    mock_context = MagicMock()
+    mock_context.user_data = {
+        "reminder": {
+            "insegnamento": "Analisi I",
+            "professore": "Rossi",
+            "sessione": "prima",
+        }
+    }
+
+    mock_exam_find.return_value = []
+    mock_get_locale.return_value = "Non ci sono date disponibili."
+
+    chat_id = 12345
+    message_id = 67890
+
+    reminder_button_appello(mock_update, mock_context, chat_id, message_id)
+
+    mock_get_locale.assert_called_with("it", TEXT_IDS.REMINDER_NO_EXAM_DATE)
+
+    mock_context.bot.editMessageText.assert_called_once_with(
+        text="Non ci sono date disponibili.",
+        chat_id=chat_id,
+        message_id=message_id,
+        reply_markup=None,
+    )
+
+
 def test_empty_context_early_returns():
     """Test early returns across various handlers when context is missing."""
     mock_update = MagicMock()
@@ -457,6 +493,44 @@ def test_reminder_confermato_handler_db_exception(mock_exam_reg):
             mock_context.bot.editMessageText.call_args.kwargs["text"]
             == "Errore duplicato"
         )
+
+
+@patch("module.commands.reminder.DbManager.select_from")
+@patch("module.commands.reminder.ExamRegistration")
+def test_reminder_confermato_handler_duplicate(mock_exam_reg, mock_select):
+    """Test reminder_confermato_handler() quando il reminder è già presente nel DB."""
+    mock_update = MagicMock()
+    mock_update.callback_query.from_user.language_code = "it"
+    mock_update.callback_query.message.chat_id = 12345
+    mock_update.callback_query.message.message_id = 67890
+
+    mock_context = MagicMock()
+    mock_context.user_data = {
+        "reminder": {
+            "appello": "2026-06-15",
+            "insegnamento": "Analisi",
+            "professore": "Rossi",
+        }
+    }
+
+    mock_select.return_value = ["esiste_gia"]
+
+    mock_instance = mock_exam_reg.return_value
+
+    with patch(
+        "module.commands.reminder.get_locale", return_value="Già presente"
+    ) as mock_get_locale:
+        reminder_confermato_handler(mock_update, mock_context)
+
+        mock_select.assert_called_once()
+
+        mock_instance.save.assert_not_called()
+
+        mock_context.bot.editMessageText.assert_called_once_with(
+            text="Già presente", chat_id=12345, message_id=67890, parse_mode='Markdown'
+        )
+
+        assert not mock_context.user_data.get("reminder")
 
 
 GET_LOCALE_PATH = 'module.utils.multi_lang_utils.get_locale'
