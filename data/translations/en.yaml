@@ -354,3 +354,5 @@ REMINDER_RECAP: |-
   Do you want to confirm?
 REMINDER_FIRST_MESSAGE: "The booking for the %capybara% exam with Professor %capybara% on %capybara% is open!"
 REMINDER_SECOND_MESSAGE: "The booking for the %capybara% exam with Professor %capybara% on %capybara% is closing soon!"
+REMINDER_TOO_LATE: "Probably registration are closing or are already closed. Go check yourself."
+REMINDER_NO_EXAM_DATE: "There are no dates available."

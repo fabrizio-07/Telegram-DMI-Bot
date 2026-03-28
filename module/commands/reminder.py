@@ -4,7 +4,7 @@
 import ast
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, date
 from typing import List
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
@@ -437,22 +437,39 @@ def reminder_confermato_handler(update: Update, context: CallbackContext):
         # Fallback se non è nel formato atteso
         data_obj = raw_date
 
+    insegnamento = u_data.get('insegnamento', 'N/D')
+    docenti = u_data.get('professore', 'N/D')
+
     nuovo_reminder = ExamRegistration(
         studenti=str(chat_id),
-        insegnamento=u_data.get('insegnamento', 'N/D'),
-        docenti=u_data.get('professore', 'N/D'),
+        insegnamento=insegnamento,
+        docenti=docenti,
         data=data_obj,
         lingua=locale,
     )
 
-    try:
-        nuovo_reminder.save()
-        message_text: str = get_locale(locale, TEXT_IDS.REMINDER_CONFIRM_REGISTRATION)
-    except Exception as e:
-        logger.error(f"Errore salvataggio DB: {e}")
-        message_text: str = get_locale(
-            locale, TEXT_IDS.REMINDER_DUPLICATE_WARNING
-        )  # non basta farlo, l'utente puó comunque selezionare lo stesso appello due volte
+    results = DbManager.select_from(
+        table_name="exams_reg",
+        where="studenti = ? AND docenti = ? AND insegnamento = ?",
+        where_args=(str(chat_id), str(docenti), str(insegnamento)),
+    )
+
+    if not results:
+        if (data_obj - date.today()).days < 3:
+            message_text: str = get_locale(locale, TEXT_IDS.REMINDER_TOO_LATE)
+        else:
+            try:
+                nuovo_reminder.save()
+                message_text: str = get_locale(
+                    locale, TEXT_IDS.REMINDER_CONFIRM_REGISTRATION
+                )
+            except Exception as e:
+                logger.error(f"Errore salvataggio DB: {e}")
+                message_text: str = get_locale(
+                    locale, TEXT_IDS.REMINDER_DUPLICATE_WARNING
+                )
+    else:
+        message_text: str = get_locale(locale, TEXT_IDS.REMINDER_DUPLICATE_WARNING)
 
     u_data.clear()
 
@@ -488,7 +505,6 @@ def reminder_button_appello(
     Allows the user to choose an exam date among the ones proposed
     """
     locale = update.callback_query.from_user.language_code
-    message_text: str = get_locale(locale, TEXT_IDS.REMINDER_SELECT_EXAM_DATE_TEXT_ID)
 
     subject = context.user_data['reminder'].get('insegnamento', '')
     prof = context.user_data['reminder'].get('professore', '')
@@ -518,10 +534,16 @@ def reminder_button_appello(
                 valid_dates.append(date_str)
 
     keyboard = []
-    for _, date in enumerate(valid_dates):
-        keyboard.append(
-            [InlineKeyboardButton(date, callback_data=f"rem_appello_{date}")]
+    if len(valid_dates) > 0:
+        for _, date in enumerate(valid_dates):
+            keyboard.append(
+                [InlineKeyboardButton(date, callback_data=f"rem_appello_{date}")]
+            )
+        message_text: str = get_locale(
+            locale, TEXT_IDS.REMINDER_SELECT_EXAM_DATE_TEXT_ID
         )
+    else:
+        message_text: str = get_locale(locale, TEXT_IDS.REMINDER_NO_EXAM_DATE)
 
     context.bot.editMessageText(
         text=message_text,
