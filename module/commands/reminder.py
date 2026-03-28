@@ -505,7 +505,6 @@ def reminder_button_appello(
     Allows the user to choose an exam date among the ones proposed
     """
     locale = update.callback_query.from_user.language_code
-    message_text: str = get_locale(locale, TEXT_IDS.REMINDER_SELECT_EXAM_DATE_TEXT_ID)
 
     subject = context.user_data['reminder'].get('insegnamento', '')
     prof = context.user_data['reminder'].get('professore', '')
@@ -535,10 +534,16 @@ def reminder_button_appello(
                 valid_dates.append(date_str)
 
     keyboard = []
-    for _, date in enumerate(valid_dates):
-        keyboard.append(
-            [InlineKeyboardButton(date, callback_data=f"rem_appello_{date}")]
+    if len(valid_dates) > 0:
+        for _, date in enumerate(valid_dates):
+            keyboard.append(
+                [InlineKeyboardButton(date, callback_data=f"rem_appello_{date}")]
+            )
+        message_text: str = get_locale(
+            locale, TEXT_IDS.REMINDER_SELECT_EXAM_DATE_TEXT_ID
         )
+    else:
+        message_text: str = get_locale(locale, TEXT_IDS.REMINDER_NO_EXAM_DATE)
 
     context.bot.editMessageText(
         text=message_text,
