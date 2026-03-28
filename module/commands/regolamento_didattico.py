@@ -3,8 +3,7 @@
 
 from typing import Optional
 
-from telegram import (CallbackQuery, InlineKeyboardButton,
-                      InlineKeyboardMarkup, Update)
+from telegram import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext
 
 from module.commands.help import help_cmd

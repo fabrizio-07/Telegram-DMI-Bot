@@ -65,7 +65,7 @@ from module.easter_egg_func import (
     uni_bandita,
 )
 from module.gitlab import git, gitlab_handler
-from module.job_updater import updater_lep, check_exam_reminders
+from module.job_updater import check_exam_reminders, updater_lep
 from module.shared import config_map
 from module.utils.multi_lang_utils import get_regex_multi_lang, load_translations
 from webapp.app import app
