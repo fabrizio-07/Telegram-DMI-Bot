@@ -28,8 +28,10 @@ from module.job_updater import check_exam_reminders
 
 @pytest.fixture
 def mock_context():
-    """Fixture per simulare il CallbackContext di Telegram"""
-    return MagicMock()
+    """Crea un mock per il CallbackContext di Telegram"""
+    context = MagicMock()
+    context.bot.send_message = MagicMock()
+    return context
 
 
 @patch('module.job_updater.datetime')
@@ -418,15 +420,13 @@ def test_empty_context_early_returns():
     """Test early returns across various handlers when context is missing."""
     mock_update = MagicMock()
     mock_context = MagicMock()
-    mock_context.user_data = {}  # Empty user_data
+    mock_context.user_data = {}
 
-    # These should all return immediately without throwing errors
     reminder_input_insegnamento(mock_update, mock_context)
     reminder_prof_handler(mock_update, mock_context)
     reminder_sessione_handler(mock_update, mock_context)
     reminder_appello_handler(mock_update, mock_context)
 
-    # Assert that no bot messages were sent because it aborted early
     mock_context.bot.send_message.assert_not_called()
     mock_context.bot.editMessageText.assert_not_called()
 
@@ -446,14 +446,12 @@ def test_reminder_confermato_handler_db_exception(mock_exam_reg):
         }
     }
 
-    # Force the save() method to throw an Exception
     mock_instance = mock_exam_reg.return_value
     mock_instance.save.side_effect = Exception("Database error")
 
     with patch("module.commands.reminder.get_locale", return_value="Errore duplicato"):
         reminder_confermato_handler(mock_update, mock_context)
 
-        # Ensure the exception was caught and the error message was sent to the user
         mock_context.bot.editMessageText.assert_called_once()
         assert (
             mock_context.bot.editMessageText.call_args.kwargs["text"]
@@ -461,15 +459,6 @@ def test_reminder_confermato_handler_db_exception(mock_exam_reg):
         )
 
 
-@pytest.fixture
-def mock_context():
-    """Crea un mock per il CallbackContext di Telegram"""
-    context = MagicMock()
-    context.bot.send_message = MagicMock()
-    return context
-
-
-# Definiamo i percorsi dei patch come costanti per pulizia
 GET_LOCALE_PATH = 'module.utils.multi_lang_utils.get_locale'
 TEXT_IDS_PATH = 'module.data.vars.TEXT_IDS'
 PLACE_HOLDER_PATH = 'module.data.vars.PLACE_HOLDER'
@@ -478,14 +467,15 @@ PLACE_HOLDER_PATH = 'module.data.vars.PLACE_HOLDER'
 @pytest.mark.parametrize(
     "exam_date, target_1, target_2, expected_call_count",
     [
-        ("2026-04-10", "2026-04-10", "2026-03-30", 1),  # Primo reminder
-        ("2026-03-30", "2026-04-10", "2026-03-30", 1),  # Secondo reminder
-        ("2026-05-01", "2026-04-10", "2026-03-30", 0),  # Nessun match
+        ("2026-04-10", "2026-04-10", "2026-03-30", 1),
+        ("2026-03-30", "2026-04-10", "2026-03-30", 1),
+        ("2026-05-01", "2026-04-10", "2026-03-30", 0),
     ],
 )
 def test_reminder_send_message_logic(
     mock_context, exam_date, target_1, target_2, expected_call_count
 ):
+    '''Testa la logica di invio del messaggio in maniera parametrizzata'''
     reminders = [
         {
             'studenti': 123456,
@@ -496,14 +486,10 @@ def test_reminder_send_message_logic(
         }
     ]
 
-    # Patchiamo get_locale nel modulo dove viene CHIAMATA
     with patch(GET_LOCALE_PATH) as mock_get_locale, patch(
         TEXT_IDS_PATH
-    ) as mock_text_ids, patch(
-        PLACE_HOLDER_PATH, "{}"
-    ):  # Simuliamo il placeholder come {}
+    ) as mock_text_ids, patch(PLACE_HOLDER_PATH, "{}"):
 
-        # Setup del mock
         mock_get_locale.return_value = "Info: {} {} {}"
 
         reminder_send_message(reminders, mock_context, target_1, target_2)
@@ -511,17 +497,15 @@ def test_reminder_send_message_logic(
         assert mock_context.bot.send_message.call_count == expected_call_count
 
         if expected_call_count > 1:
-            # Verifica che i dati siano stati inseriti nel testo
             sent_text = mock_context.bot.send_message.call_args[1]['text']
             assert "Analisi" in sent_text
             assert exam_date in sent_text
 
 
 def test_reminder_send_message_exception(mock_context):
-    """Testa la gestione dell'errore se l'invio fallisce (es. utente ha bloccato il bot)"""
+    """Testa la gestione dell'errore se l'invio fallisce"""
     reminders = [{'studenti': 1, 'data': "2026-01-01", 'lingua': 'it'}]
 
-    # Simuliamo un errore nell'invio del messaggio
     mock_context.bot.send_message.side_effect = Exception("Bot blocked")
 
     with patch(GET_LOCALE_PATH) as mock_get_locale, patch(TEXT_IDS_PATH), patch(
@@ -530,7 +514,6 @@ def test_reminder_send_message_exception(mock_context):
 
         mock_get_locale.return_value = "Test {} {} {}"
 
-        # La funzione non deve crashare, ma gestire l'eccezione internamente con il logger
         reminder_send_message(reminders, mock_context, "2026-01-01", "2026-02-02")
 
         assert mock_context.bot.send_message.called
