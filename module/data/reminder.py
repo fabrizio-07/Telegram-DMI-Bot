@@ -18,6 +18,7 @@ class ExamRegistration(Scrapable):
         insegnamento (:class:`str`): subject of the exam
         docenti (:class:`str`): name of the teacher
         data (:class:`date`): date of the exam
+        lingua (:class:`str`): language code of the student who wants to receive a reminder
     """
 
     def __init__(
