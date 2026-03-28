@@ -354,3 +354,5 @@ REMINDER_RECAP: |-
   Professore: %capybara%
   Data: %capybara%
   Vuoi confermare?
+REMINDER_FIRST_MESSAGE: "La prenotazione per l'esame di %capybara%, col Professore %capybara%, di giorno %capybara% é ora aperta!"
+REMINDER_SECOND_MESSAGE: "La possibilitá di prenotarsi per l'esame di %capybara%, col Professore %capybara%, di giorno %capybara% sta per terminare!"

@@ -80,6 +80,47 @@ def reminder(update: Update, context: CallbackContext) -> None:
     )
 
 
+def reminder_send_message(
+    reminders: list,
+    context: CallbackContext,
+    first_target_date: str,
+    second_target_date: str,
+) -> None:
+    '''Sends a message to the user to remind them to register for the exam.'''
+
+    for rem in reminders:
+        student_id = rem.get('studenti')
+        subject = rem.get('insegnamento', 'N/D')
+        prof = rem.get('docenti', 'N/D')
+        exam_date = rem.get('data')
+        locale = rem.get('lingua', 'it')
+
+        # sceglie se mandare il primo o il secondo reminder in base a se mancano 14 o 4 giorni dall'esame
+        if exam_date == first_target_date:
+            message_text: str = (
+                get_locale(locale, TEXT_IDS.REMINDER_FIRST_MESSAGE)
+                .replace(PLACE_HOLDER, subject, 1)
+                .replace(PLACE_HOLDER, prof, 1)
+                .replace(PLACE_HOLDER, exam_date, 1)
+            )
+        elif exam_date == second_target_date:
+            message_text: str = (
+                get_locale(locale, TEXT_IDS.REMINDER_SECOND_MESSAGE)
+                .replace(PLACE_HOLDER, subject, 1)
+                .replace(PLACE_HOLDER, prof, 1)
+                .replace(PLACE_HOLDER, exam_date, 1)
+            )
+        else:
+            continue  # safety check
+
+        try:
+            context.bot.send_message(
+                chat_id=student_id, text=message_text, parse_mode='Markdown'
+            )
+        except Exception as msg_err:
+            logger.error(f"Errore nell'invio del messaggio a {student_id}: {msg_err}")
+
+
 # gestire quando l'utente seleziona lo stesso appello due volte!!!!!!!!
 def reminder_new_handler(update: Update, context: CallbackContext):
     '''Handler to create a new reminder'''
@@ -154,12 +195,10 @@ def reminder_del_handler(update: Update, context: CallbackContext):
                 ),
             )
 
-            message_text: str = get_locale(
-                locale, TEXT_IDS.REMINDER_CONFIRM_DELETE
-            ).replace(PLACE_HOLDER, selected_exam.insegnamento, 1)
-
-            message_text: str = message_text.replace(
-                PLACE_HOLDER, selected_exam.data, 1
+            message_text: str = (
+                get_locale(locale, TEXT_IDS.REMINDER_CONFIRM_DELETE)
+                .replace(PLACE_HOLDER, selected_exam.insegnamento, 1)
+                .replace(PLACE_HOLDER, selected_exam.data, 1)
             )
 
         except Exception as e:
@@ -344,12 +383,12 @@ def reminder_appello_handler(update: Update, context: CallbackContext) -> None:
     prof = data.get('professore', 'N/D')
     data_scelta = data.get('appello', 'Data selezionata')
 
-    message_text: str = get_locale(locale, TEXT_IDS.REMINDER_RECAP).replace(
-        PLACE_HOLDER, esame, 1
+    message_text: str = (
+        get_locale(locale, TEXT_IDS.REMINDER_RECAP)
+        .replace(PLACE_HOLDER, esame, 1)
+        .replace(PLACE_HOLDER, prof, 1)
+        .replace(PLACE_HOLDER, data_scelta, 1)
     )
-
-    message_text: str = message_text.replace(PLACE_HOLDER, prof, 1)
-    message_text: str = message_text.replace(PLACE_HOLDER, data_scelta, 1)
 
     keyboard: List[List[InlineKeyboardButton]] = [[]]
     keyboard = [
@@ -393,6 +432,7 @@ def reminder_confermato_handler(update: Update, context: CallbackContext):
         insegnamento=u_data.get('insegnamento', 'N/D'),
         docenti=u_data.get('professore', 'N/D'),
         data=data_obj,
+        lingua=locale,
     )
 
     try:

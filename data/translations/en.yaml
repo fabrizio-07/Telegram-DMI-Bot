@@ -352,3 +352,5 @@ REMINDER_RECAP: |-
   Professor: %capybara%
   Date: %capybara%
   Do you want to confirm?
+REMINDER_FIRST_MESSAGE: "The booking for the %capybara% exam with Professor %capybara% on %capybara% is open!"
+REMINDER_SECOND_MESSAGE: "The booking for the %capybara% exam with Professor %capybara% on %capybara% is closing soon!"

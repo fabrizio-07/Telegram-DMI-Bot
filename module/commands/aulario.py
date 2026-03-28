@@ -7,8 +7,7 @@ from io import BytesIO
 from typing import Optional
 
 from PIL import Image, ImageDraw, ImageFont
-from telegram import (CallbackQuery, InlineKeyboardButton,
-                      InlineKeyboardMarkup, Update)
+from telegram import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext
 
 from module.data import TimetableSlot
