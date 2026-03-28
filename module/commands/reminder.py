@@ -86,14 +86,14 @@ def reminder_send_message(
     first_target_date: str,
     second_target_date: str,
 ) -> None:
-
-    locale = 'it'  # capire come prendere il language_code senza update
+    '''Sends a message to the user to remind them to register for the exam.'''
 
     for rem in reminders:
         student_id = rem.get('studenti')
         subject = rem.get('insegnamento', 'N/D')
         prof = rem.get('docenti', 'N/D')
         exam_date = rem.get('data')
+        locale = rem.get('lingua', 'it')
 
         # sceglie se mandare il primo o il secondo reminder in base a se mancano 14 o 4 giorni dall'esame
         if exam_date == first_target_date:
@@ -432,6 +432,7 @@ def reminder_confermato_handler(update: Update, context: CallbackContext):
         insegnamento=u_data.get('insegnamento', 'N/D'),
         docenti=u_data.get('professore', 'N/D'),
         data=data_obj,
+        lingua=locale,
     )
 
     try:
