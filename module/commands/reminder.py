@@ -4,7 +4,7 @@
 import ast
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, date
 from typing import List
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
@@ -455,14 +455,19 @@ def reminder_confermato_handler(update: Update, context: CallbackContext):
     )
 
     if not results:
-        try:
-            nuovo_reminder.save()
-            message_text: str = get_locale(
-                locale, TEXT_IDS.REMINDER_CONFIRM_REGISTRATION
-            )
-        except Exception as e:
-            logger.error(f"Errore salvataggio DB: {e}")
-            message_text: str = get_locale(locale, TEXT_IDS.REMINDER_DUPLICATE_WARNING)
+        if (data_obj - date.today()).days < 3:
+            message_text: str = get_locale(locale, TEXT_IDS.REMINDER_TOO_LATE)
+        else:
+            try:
+                nuovo_reminder.save()
+                message_text: str = get_locale(
+                    locale, TEXT_IDS.REMINDER_CONFIRM_REGISTRATION
+                )
+            except Exception as e:
+                logger.error(f"Errore salvataggio DB: {e}")
+                message_text: str = get_locale(
+                    locale, TEXT_IDS.REMINDER_DUPLICATE_WARNING
+                )
     else:
         message_text: str = get_locale(locale, TEXT_IDS.REMINDER_DUPLICATE_WARNING)
 
