@@ -437,22 +437,34 @@ def reminder_confermato_handler(update: Update, context: CallbackContext):
         # Fallback se non è nel formato atteso
         data_obj = raw_date
 
+    insegnamento = u_data.get('insegnamento', 'N/D')
+    docenti = u_data.get('professore', 'N/D')
+
     nuovo_reminder = ExamRegistration(
         studenti=str(chat_id),
-        insegnamento=u_data.get('insegnamento', 'N/D'),
-        docenti=u_data.get('professore', 'N/D'),
+        insegnamento=insegnamento,
+        docenti=docenti,
         data=data_obj,
         lingua=locale,
     )
 
-    try:
-        nuovo_reminder.save()
-        message_text: str = get_locale(locale, TEXT_IDS.REMINDER_CONFIRM_REGISTRATION)
-    except Exception as e:
-        logger.error(f"Errore salvataggio DB: {e}")
-        message_text: str = get_locale(
-            locale, TEXT_IDS.REMINDER_DUPLICATE_WARNING
-        )  # non basta farlo, l'utente puó comunque selezionare lo stesso appello due volte
+    results = DbManager.select_from(
+        table_name="exams_reg",
+        where="studenti = ? AND docenti = ? AND insegnamento = ?",
+        where_args=(str(chat_id), str(docenti), str(insegnamento)),
+    )
+
+    if not results:
+        try:
+            nuovo_reminder.save()
+            message_text: str = get_locale(
+                locale, TEXT_IDS.REMINDER_CONFIRM_REGISTRATION
+            )
+        except Exception as e:
+            logger.error(f"Errore salvataggio DB: {e}")
+            message_text: str = get_locale(locale, TEXT_IDS.REMINDER_DUPLICATE_WARNING)
+    else:
+        message_text: str = get_locale(locale, TEXT_IDS.REMINDER_DUPLICATE_WARNING)
 
     u_data.clear()
 
