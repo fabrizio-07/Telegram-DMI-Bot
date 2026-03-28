@@ -4,7 +4,7 @@
 import ast
 import logging
 import re
-from datetime import datetime, date
+from datetime import date, datetime, timedelta
 from typing import List
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
@@ -455,7 +455,15 @@ def reminder_confermato_handler(update: Update, context: CallbackContext):
     )
 
     if not results:
-        if (data_obj - date.today()).days < 4:
+
+        limit_date = date.today() + timedelta(days=4)
+
+        if isinstance(data_obj, str):
+            is_too_late = data_obj < limit_date.strftime('%Y-%m-%d')
+        else:
+            is_too_late = data_obj < limit_date
+
+        if is_too_late:
             message_text: str = get_locale(locale, TEXT_IDS.REMINDER_TOO_LATE)
         else:
             try:
