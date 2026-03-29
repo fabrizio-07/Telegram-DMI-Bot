@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 
 import pytest
-from telegram import InlineKeyboardButton
 
 from module.commands.reminder import (
     TEXT_IDS,
