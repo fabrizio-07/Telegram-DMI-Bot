@@ -4,7 +4,7 @@
 import ast
 import logging
 import re
-from datetime import datetime, date
+from datetime import date, datetime, timedelta
 from typing import List
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
@@ -430,12 +430,15 @@ def reminder_confermato_handler(update: Update, context: CallbackContext):
 
     u_data = context.user_data.get('reminder', {})
     raw_date = u_data.get('appello', 'Data selezionata')
+    clean_date_str = str(raw_date).split(' ', maxsplit=1)[0]
 
     try:
-        data_obj = datetime.strptime(raw_date, '%Y-%m-%d').date()
+        data_obj = datetime.strptime(clean_date_str, '%d/%m/%Y').date()
     except (ValueError, TypeError):
-        # Fallback se non è nel formato atteso
-        data_obj = raw_date
+        try:
+            data_obj = datetime.strptime(clean_date_str, '%d-%m-%Y').date()
+        except (ValueError, TypeError):
+            data_obj = raw_date
 
     insegnamento = u_data.get('insegnamento', 'N/D')
     docenti = u_data.get('professore', 'N/D')
@@ -455,9 +458,8 @@ def reminder_confermato_handler(update: Update, context: CallbackContext):
     )
 
     if not results:
-        if (data_obj - date.today()).days < 4:
-            message_text: str = get_locale(locale, TEXT_IDS.REMINDER_TOO_LATE)
-        else:
+
+        if (data_obj - date.today()).days > 4:
             try:
                 nuovo_reminder.save()
                 message_text: str = get_locale(
@@ -468,6 +470,9 @@ def reminder_confermato_handler(update: Update, context: CallbackContext):
                 message_text: str = get_locale(
                     locale, TEXT_IDS.REMINDER_DUPLICATE_WARNING
                 )
+        else:
+            message_text: str = get_locale(locale, TEXT_IDS.REMINDER_TOO_LATE)
+
     else:
         message_text: str = get_locale(locale, TEXT_IDS.REMINDER_DUPLICATE_WARNING)
 
