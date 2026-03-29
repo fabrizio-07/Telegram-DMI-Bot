@@ -459,7 +459,7 @@ def reminder_confermato_handler(update: Update, context: CallbackContext):
 
     if not results:
 
-        if (data_obj - date.today()).days >= 3:
+        if (data_obj - date.today()).days > 4:
             try:
                 nuovo_reminder.save()
                 message_text: str = get_locale(
