@@ -4,7 +4,7 @@
 import ast
 import logging
 import re
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from typing import List
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
@@ -127,8 +127,10 @@ def reminder_send_message(
                         prof,
                     ),
                 )
-        except Exception as msg_err:
-            logger.error(f"Errore nell'invio del messaggio a {student_id}: {msg_err}")
+        except Exception as msg_err:  # pylint: disable=broad-exception-caught
+            logger.error(
+                "Errore nell'invio del messaggio a %s: %s", student_id, msg_err
+            )
 
 
 # gestire quando l'utente seleziona lo stesso appello due volte!!!!!!!!
@@ -211,8 +213,8 @@ def reminder_del_handler(update: Update, context: CallbackContext):
                 .replace(PLACE_HOLDER, selected_exam.data, 1)
             )
 
-        except Exception as e:
-            logger.error(f"Errore eliminazione record: {e}")
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.error("Errore eliminazione record: %s", e)
             message_text: str = get_locale(locale, TEXT_IDS.REPORT_WARNING_TEXT_ID)
     elif idx == -1:
         try:
@@ -224,8 +226,8 @@ def reminder_del_handler(update: Update, context: CallbackContext):
 
             message_text: str = get_locale(locale, TEXT_IDS.REMINDER_CONFIRM_DELETE_ALL)
 
-        except Exception as e:
-            logger.error(f"Errore eliminazione record: {e}")
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.error("Errore eliminazione record: %s", e)
             message_text: str = get_locale(locale, TEXT_IDS.REPORT_WARNING_TEXT_ID)
 
     context.bot.send_message(
@@ -465,8 +467,8 @@ def reminder_confermato_handler(update: Update, context: CallbackContext):
                 message_text: str = get_locale(
                     locale, TEXT_IDS.REMINDER_CONFIRM_REGISTRATION
                 )
-            except Exception as e:
-                logger.error(f"Errore salvataggio DB: {e}")
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                logger.error("Errore salvataggio DB: %s", e)
                 message_text: str = get_locale(
                     locale, TEXT_IDS.REMINDER_DUPLICATE_WARNING
                 )
@@ -540,9 +542,13 @@ def reminder_button_appello(
 
     keyboard = []
     if len(valid_dates) > 0:
-        for _, date in enumerate(valid_dates):
+        for _, exam_date in enumerate(valid_dates):
             keyboard.append(
-                [InlineKeyboardButton(date, callback_data=f"rem_appello_{date}")]
+                [
+                    InlineKeyboardButton(
+                        exam_date, callback_data=f"rem_appello_{exam_date}"
+                    )
+                ]
             )
         message_text: str = get_locale(
             locale, TEXT_IDS.REMINDER_SELECT_EXAM_DATE_TEXT_ID

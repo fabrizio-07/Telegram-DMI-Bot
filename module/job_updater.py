@@ -34,9 +34,10 @@ def check_exam_reminders(context: CallbackContext) -> None:
                 reminders, context, first_target_date, second_target_date
             )
 
-    except Exception as db_err:
+    except Exception as db_err:  # pylint: disable=broad-exception-caught
         logger.error(
-            f"Database error nel controllo all'interno della funzione check_exam_reminders: {db_err}"
+            "Database error nel controllo all'interno della funzione check_exam_reminders: %s",
+            db_err,
         )
 
 
