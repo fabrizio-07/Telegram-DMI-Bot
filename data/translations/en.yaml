@@ -336,6 +336,7 @@ EXAMS_USAGE_TEXT_ID: |-
 # /reminder command
 REMINDER_SELECT_EXAM_DATE_TEXT_ID: "Select the exam date you are interested in:"
 REMINDER_NOT_FOUND_SUBJECT_TEXT_ID: "No subject matching '%capybara%' was found."
+REMINDER_NOT_FOUND_PROFESSOR_TEXT_ID: "No professor teaching %capybara% was found."
 REMINDER_ADD: "Add reminder"
 REMINDER_DELETE: "Delete reminder"
 REMINDER_DELETE_SELECTION: "What reminder would you like to delete?"

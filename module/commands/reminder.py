@@ -247,6 +247,16 @@ def reminder_input_insegnamento(update: Update, context: CallbackContext) -> Non
     raw_subject = re.sub(r"^(?!=<[/])[Ii]ns:\s+", "", update.message.text)
     if context.user_data['reminder'].get('cmd', None) == "input_insegnamento":
         exams = Exam.find("", "", "", raw_subject)
+
+        if not exams:
+            context.bot.send_message(
+                chat_id=update.message.chat_id,
+                text=get_locale(
+                    locale, TEXT_IDS.REMINDER_NOT_FOUND_SUBJECT_TEXT_ID
+                ).replace(PLACE_HOLDER, raw_subject),
+            )
+            return
+
         unique_exams = []
         seen = set()
         for exam in exams:
@@ -255,6 +265,13 @@ def reminder_input_insegnamento(update: Update, context: CallbackContext) -> Non
             if (subj, prof) not in seen:
                 unique_exams.append({'subj': subj, 'prof': prof})
                 seen.add((subj, prof))
+
+        if not unique_exams:
+            context.bot.send_message(
+                chat_id=update.message.chat_id,
+                text=get_locale(locale, TEXT_IDS.REMINDER_NOT_FOUND_PROFESSOR_TEXT_ID),
+            )
+            return
 
         if 'temp_exams_list' in context.user_data['reminder']:
             context.user_data['reminder']['temp_exams_list'].clear()
@@ -276,13 +293,6 @@ def reminder_input_insegnamento(update: Update, context: CallbackContext) -> Non
             chat_id=update.message.chat_id,
             text=get_locale(locale, TEXT_IDS.REMINDER_SELECT_EXAM_PROFESSOR),
             reply_markup=InlineKeyboardMarkup(keyboard),
-        )
-    else:
-        context.bot.send_message(
-            chat_id=update.message.chat_id,
-            text=get_locale(
-                locale, TEXT_IDS.REMINDER_NOT_FOUND_SUBJECT_TEXT_ID
-            ).replace(PLACE_HOLDER, raw_subject),
         )
 
 
