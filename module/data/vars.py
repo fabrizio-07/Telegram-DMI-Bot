@@ -150,6 +150,7 @@ class TEXT_IDS(Enum):
     REMINDER_SECOND_MESSAGE = auto()
     REMINDER_TOO_LATE = auto()
     REMINDER_NO_EXAM_DATE = auto()
+    REMINDER_NOT_FOUND_PROFESSOR_TEXT_ID = auto()
 
 
 # Placeholder special string to be used in replace()
