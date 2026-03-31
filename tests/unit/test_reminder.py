@@ -24,7 +24,6 @@ from module.commands.reminder import (
 )
 from module.job_updater import check_exam_reminders
 
-
 # ---- check_exam_reminders() in module/job_updater.py
 
 

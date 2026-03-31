@@ -262,7 +262,7 @@ def esami_input_insegnamento(update: Update, context: CallbackContext) -> None:
 
 def get_esami_text_inline_keyboard(
     locale: str, context: CallbackContext
-) -> (str, InlineKeyboardMarkup):
+) -> tuple[str, InlineKeyboardMarkup]:
     """Generates the text and the InlineKeyboard for the /esami command, based on the current parameters.
 
     Args:

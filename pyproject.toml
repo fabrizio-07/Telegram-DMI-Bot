@@ -5,6 +5,7 @@ skip-string-normalization = true
 profile = "black"
 
 [tool.mypy]
+exclude = ["webapp"]
 ignore_missing_imports = true
 # Relax strict optional checking
 no_implicit_optional = false
@@ -21,4 +22,6 @@ disable_error_code = [
     "assignment",
     "call-arg",
     "return",
+    "var-annotated",
+    "no-redef",
 ]

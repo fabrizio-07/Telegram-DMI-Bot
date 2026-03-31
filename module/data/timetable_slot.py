@@ -60,9 +60,7 @@ class TimetableSlot(Scrapable):
     def end_hour(self) -> str:
         """adds half an hour to the ora_fine value"""
         if self.ora_fine[3:] == '30':
-            return "{00}:00".format(
-                int(self.ora_fine[:2]) + 1
-            )  # pylint: disable=consider-using-f-string
+            return f"{int(self.ora_fine[:2]) + 1}:00"
         return self.ora_fine[:3] + '30'
 
     @property
@@ -101,7 +99,7 @@ class TimetableSlot(Scrapable):
                         time = time[:3] + "30"
                     if not pd.isnull(row):
                         r = row[:20] + rooms[i]
-                        if not r in subjects:
+                        if r not in subjects:
                             subjects[r] = cls(
                                 nome=row.replace('[]', '')
                                 .replace('[', '(')

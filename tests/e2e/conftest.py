@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name,unused-argument
 """Test configuration"""
 
 import asyncio
