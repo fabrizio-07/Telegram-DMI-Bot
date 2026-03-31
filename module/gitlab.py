@@ -7,6 +7,7 @@ import os
 import re
 import sqlite3
 import time
+from typing import Optional
 
 # System libraries
 from urllib.parse import quote
@@ -29,7 +30,7 @@ logger = logging.getLogger(__name__)
 GITLAB_AUTH_TOKEN = config_map['gitlab']['token']
 GITLAB_ROOT_GROUP = config_map['gitlab']['root']
 
-session = None
+session: Optional[requests.Session] = None
 api = None
 db = None
 
@@ -246,11 +247,16 @@ def download_blob_file_async_internal(
     if chat_id:
         web_url, pathname, parent_id = db_result
         blob_info = get_blob_file(parent_id, blob_id)
+        if blob_info is None:
+            return
         download_url = f"{web_url}/raw/master/{quote(pathname)}"
 
-        if int(blob_info['size']) < 4.5e7:
+        size = blob_info.get('size', 0) if blob_info else 0  # type: ignore[union-attr]
+        if size and int(size) < 4.5e7:
             file_name = f"{time.time()}_{blob_name}"
 
+            if session is None:
+                return
             file_path = f'file/{file_name}'
             with open(file_path, 'wb') as file_handle:
                 with session.get(download_url, stream=True) as download:
@@ -277,9 +283,12 @@ def download_blob_file_async(update: Update, context: CallbackContext, blob=None
         update: "update" object of Telegram API
         blob: Object containing ID and name of a blob (default: None)
     """
+    global db  # noqa: F824
 
     if blob:
         blob_id, blob_name = blob['id'], blob['name']
+        if db is None:
+            return
 
         query = "SELECT * FROM\
             (SELECT web_url FROM gitlab WHERE id = (\
@@ -349,6 +358,33 @@ def send_message(
             )
 
 
+def _handle_subgroup_action(context, origin_id, buttons):
+    """Populate buttons with subgroups and projects for a given origin_id."""
+    subgroups = get_subgroups(context, origin_id)
+    if subgroups:
+        for subgroup in subgroups:
+            db.execute(
+                "INSERT OR REPLACE INTO gitlab (id, parent_id, name, type) VALUES (?, ?, ?, ?)",
+                (subgroup.id, subgroup.parent_id, subgroup.name, 'subgroup'),
+            )
+            buttons.append(
+                InlineKeyboardButton(
+                    f"🗂 {subgroup.name}", callback_data=f'git_s_{subgroup.id}'
+                )
+            )
+
+    for project in get_projects(origin_id):
+        db.execute(
+            "INSERT OR REPLACE INTO gitlab (id, parent_id, name, web_url, type) VALUES (?, ?, ?, ?, ?)",
+            (project.id, origin_id, project.name, project.web_url, 'project'),
+        )
+        buttons.append(
+            InlineKeyboardButton(
+                f"🗂 {project.name}", callback_data=f'git_p_{project.id}'
+            )
+        )
+
+
 def gitlab_handler(update: Update, context: CallbackContext):
     """
     Handle every action of /git and /gitlab command
@@ -376,9 +412,7 @@ def gitlab_handler(update: Update, context: CallbackContext):
         data = query.data.replace("git_", "")
 
     if not data:
-        subgroups = get_subgroups(context, GITLAB_ROOT_GROUP)
-
-        for subgroup in subgroups:
+        for subgroup in get_subgroups(context, GITLAB_ROOT_GROUP):
             db.execute(
                 "INSERT OR REPLACE INTO gitlab (id, parent_id, name, type) VALUES (?, ?, ?, ?)",
                 (subgroup.id, subgroup.parent_id, subgroup.name, 'subgroup'),
@@ -412,32 +446,7 @@ def gitlab_handler(update: Update, context: CallbackContext):
             action = (_type[0] if _type else 'subgroup')[0]
 
         if action == 's':
-            subgroups = get_subgroups(context, origin_id)
-
-            if subgroups:
-                for subgroup in subgroups:
-                    db.execute(
-                        "INSERT OR REPLACE INTO gitlab (id, parent_id, name, type) VALUES (?, ?, ?, ?)",
-                        (subgroup.id, subgroup.parent_id, subgroup.name, 'subgroup'),
-                    )
-                    buttons.append(
-                        InlineKeyboardButton(
-                            f"🗂 {subgroup.name}", callback_data=f'git_s_{subgroup.id}'
-                        )
-                    )
-
-            projects = get_projects(origin_id)
-
-            for project in projects:
-                db.execute(
-                    "INSERT OR REPLACE INTO gitlab (id, parent_id, name, web_url, type) VALUES (?, ?, ?, ?, ?)",
-                    (project.id, origin_id, project.name, project.web_url, 'project'),
-                )
-                buttons.append(
-                    InlineKeyboardButton(
-                        f"🗂 {project.name}", callback_data=f'git_p_{project.id}'
-                    )
-                )
+            _handle_subgroup_action(context, origin_id, buttons)
         elif action == 'p':
             buttons.extend(explore_repository_tree(origin_id, '/', db))
         elif action == 't':
@@ -446,14 +455,20 @@ def gitlab_handler(update: Update, context: CallbackContext):
             ).fetchone()
             buttons.extend(explore_repository_tree(origin_id, path, db))
         elif action == 'b':
-            blob = {'id': blob_id, 'name': parent[2]}
+            if len(parent) >= 3:
+                blob = {'id': blob_id, 'name': parent[2]}
 
         if origin_id != str(GITLAB_ROOT_GROUP):
-            buttons.append(
-                [InlineKeyboardButton("🔙", callback_data=f'git_x_{parent[0]}')]
-            )
+            if len(parent) >= 1:
+                buttons.append(
+                    [InlineKeyboardButton("🔙", callback_data=f'git_x_{parent[0]}')]
+                )
 
-    title = parent[2] if blob_id and len(parent) == 3 else parent[1]
+    title = ""
+    if blob_id and len(parent) >= 3:
+        title = parent[2]
+    elif len(parent) >= 2:
+        title = parent[1]
     send_message(update, context, title, buttons, blob)
 
     db.commit()

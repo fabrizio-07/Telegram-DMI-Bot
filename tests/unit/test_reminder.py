@@ -25,24 +25,15 @@ from module.commands.reminder import (
 from module.job_updater import check_exam_reminders
 
 
-@pytest.fixture
-def mock_context():
-    """Crea un mock per il CallbackContext di Telegram"""
-    context = MagicMock()
-    context.bot.send_message = MagicMock()
-    return context
-
-
 # ---- check_exam_reminders() in module/job_updater.py
 
 
 @patch('module.job_updater.datetime')
 @patch('module.job_updater.DbManager')
 @patch('module.job_updater.reminder_send_message')
-def test_check_exam_reminders_success(
-    mock_reminder_send, mock_db, mock_datetime, mock_context
-):
+def test_check_exam_reminders_success(mock_reminder_send, mock_db, mock_datetime):
     """Verifica il calcolo date e l'invio quando ci sono risultati"""
+    mock_context = MagicMock()
 
     fixed_now = datetime(2026, 4, 1)
     mock_datetime.now.return_value = fixed_now
@@ -67,8 +58,9 @@ def test_check_exam_reminders_success(
 
 @patch('module.job_updater.DbManager')
 @patch('module.job_updater.reminder_send_message')
-def test_check_exam_reminders_no_results(mock_reminder_send, mock_db, mock_context):
+def test_check_exam_reminders_no_results(mock_reminder_send, mock_db):
     """Verifica il non invio quando non ci sono risultati"""
+    mock_context = MagicMock()
     mock_db.select_from.return_value = []
 
     check_exam_reminders(mock_context)
@@ -80,8 +72,9 @@ def test_check_exam_reminders_no_results(mock_reminder_send, mock_db, mock_conte
 # ---- reminder() in module/commands/reminder.py
 @patch('module.job_updater.DbManager')
 @patch('module.job_updater.logger')
-def test_check_exam_reminders_db_error(mock_logger, mock_db, mock_context):
+def test_check_exam_reminders_db_error(mock_logger, mock_db):
     """Verifica la gestione delle eccezioni e il logging degli errori"""
+    mock_context = MagicMock()
 
     mock_db.select_from.side_effect = Exception("Errore di connessione")
 
@@ -458,9 +451,7 @@ def test_reminder_confermato_handler_duplicate(mock_exam_reg, mock_select):
 
     mock_instance = mock_exam_reg.return_value
 
-    with patch(
-        "module.commands.reminder.get_locale", return_value="Già presente"
-    ) as mock_get_locale:
+    with patch("module.commands.reminder.get_locale", return_value="Già presente"):
         reminder_confermato_handler(mock_update, mock_context)
 
         mock_select.assert_called_once()
@@ -663,9 +654,10 @@ PLACE_HOLDER_PATH = 'module.data.vars.PLACE_HOLDER'
     ],
 )
 def test_reminder_send_message_logic(
-    mock_context, exam_date, target_1, target_2, expected_call_count
+    exam_date, target_1, target_2, expected_call_count
 ):
     '''Testa la logica di invio del messaggio in maniera parametrizzata'''
+    mock_context = MagicMock()
     reminders = [
         {
             'studenti': 123456,
@@ -676,9 +668,9 @@ def test_reminder_send_message_logic(
         }
     ]
 
-    with patch(GET_LOCALE_PATH) as mock_get_locale, patch(
-        TEXT_IDS_PATH
-    ) as mock_text_ids, patch(PLACE_HOLDER_PATH, "{}"):
+    with patch(GET_LOCALE_PATH) as mock_get_locale, patch(TEXT_IDS_PATH), patch(
+        PLACE_HOLDER_PATH, "{}"
+    ):
 
         mock_get_locale.return_value = "Info: {} {} {}"
 
@@ -692,8 +684,9 @@ def test_reminder_send_message_logic(
             assert exam_date in sent_text
 
 
-def test_reminder_send_message_exception(mock_context):
+def test_reminder_send_message_exception():
     """Testa la gestione dell'errore se l'invio fallisce"""
+    mock_context = MagicMock()
     reminders = [{'studenti': 1, 'data': "01-01-2026", 'lingua': 'it'}]
 
     mock_context.bot.send_message.side_effect = Exception("Bot blocked")
@@ -710,8 +703,9 @@ def test_reminder_send_message_exception(mock_context):
 
 
 @patch("module.commands.reminder.DbManager.delete_from")
-def test_reminder_send_message_deletes_on_second_target(mock_delete, mock_context):
+def test_reminder_send_message_deletes_on_second_target(mock_delete):
     """Test reminder_send_message() elimina il record al secondo avviso."""
+    mock_context = MagicMock()
     exam_date = "10-04-2026"
     reminders = [
         {
