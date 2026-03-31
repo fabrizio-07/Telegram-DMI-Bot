@@ -428,7 +428,6 @@ disable=raw-checker-failed,
         dangerous-default-value,
         missing-class-docstring,
         too-many-positional-arguments,
-        consider-using-f-string,
         too-many-arguments,
         duplicate-code
 
