@@ -16,7 +16,7 @@ def favicon():
 
 
 @app.get('/drive/folder')
-def _(folder_id: str):
+def get_folder_contents(folder_id: str):
     'Returns content of a folder in the DMI Drive.'
     files = drive_utils.list_files(folder_id) or []
     keys = 'id', 'title', 'mimeType'
@@ -26,7 +26,7 @@ def _(folder_id: str):
 
 
 @app.get('/drive/file')
-def _(file_id: str):
+def get_file_contents(file_id: str):
     'Returns content of a file in the DMI Drive.'
     file = drive_utils.get_file(file_id)
     if not file:
